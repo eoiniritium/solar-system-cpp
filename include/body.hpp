@@ -21,11 +21,7 @@ struct ForceVector {
     VectorUnit y;
 };
 
-M convertToRealMovementValues(double scale, M pixelDistance) {
-    return (scale) * pixelDistance;
-}
-
-M GetDistance(double scale, M x1, M y1, M x2, M y2) {
+M GetDistance(M x1, M y1, M x2, M y2) {
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
     M r = sqrt((dy * dy) + (dx * dx));
@@ -35,15 +31,15 @@ M GetDistance(double scale, M x1, M y1, M x2, M y2) {
 
 N GetGravitationalForce(M r, KG m1, KG m2) {
     
-    N force = G * ((m1 * m2)/ (r*r));
+    N force = G * ((m1 * m2) / (r*r));
+    std::cout << force << std::endl;
 
     return force;
 }
 
-Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) {
+Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
-    //printf("dx: %f dy: %f\n", dx, dy);
 
     bool isRight = x2 >= x1; // is x2 right of x1
     bool isBelow = y2 >= y1; // is x2 below x1
@@ -187,19 +183,18 @@ class Body {
     void simulate(double timeMultiplier, double scale, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
         double dt = GetFrameTime();
 
-        Fx = effectiveForceX;
-        Fy = effectiveForceY;
+        applyForceSplit(effectiveForceX, effectiveForceY);
 
-        ax = Fx / mass;
-        ay = Fy / mass;
-        printf("\tFx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", vx, vy, ax, ay);
+        //ax = Fx / mass;
+        //ay = Fy / mass;
+        //printf("Fx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", vx, vy, ax, ay);
 
         //v = u + at
         vx += ay * dt;
         vy += ay * dt;
 
-        x += (vx*dt * timeMultiplier)/scale;
-        y += (vy*dt * timeMultiplier)/scale;
+        //x += (vx*dt * timeMultiplier)/scale;
+        //y += (vy*dt * timeMultiplier)/scale;
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
@@ -208,7 +203,7 @@ class Body {
             drawResultantForce();
             drawResultantAcceleration();
             drawResultantVelocity();
-            //printf("[%s] X: %f Y: %f R: %f\n", label.c_str(), x, y, radius);
+            //printf("[%5s] Fx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", label.c_str(), vx, vy, ax, ay);
         }
 
         DrawCircle(x, y, radius, col);    

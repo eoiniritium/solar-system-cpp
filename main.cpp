@@ -17,8 +17,9 @@ int main() {
     InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
     std::vector<Body> bodies;
-    bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2,       0, 0, 5.972e24 , 10.0f, GREEN)); // Earth
-    bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e22, 10.0f, WHITE)); // Moon
+    bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2,       0, 0, 5.972e7 , 10.0f, GREEN)); // Earth
+    bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e7, 10.0f, WHITE)); // Moon
+    //bodies.push_back(Body("Sun", 1000, 600, 0, 0, 1000.0f, 35, RED));
 
     double framecount = 0;
 
@@ -26,40 +27,32 @@ int main() {
         BeginDrawing();
             ClearBackground(BLACK);
             printf("Frame: %g\n", ++framecount);
+            Vector2 MP = GetMousePosition();
+            bodies[1].setLocation(MP.x, MP.y); // Moon
             for(size_t i = 0; i < bodies.size(); ++i) {
                 N Fx = 0;
                 N Fy = 0;
-                for(size_t j = 0; j < bodies.size(); j++) {
-                    //Body comp = bodies[i];
-                    if (i == j) continue;
-
-                    //N currX = convertToRealMovementValues(scale, bodies[i].getX());
-                    //N currY = convertToRealMovementValues(scale, bodies[i].getY());
-
-                    //N pairX = convertToRealMovementValues(scale, bodies[j].getX());
-                    //N pairY = convertToRealMovementValues(scale, bodies[j].getY());
+                for(size_t k = 0; k < bodies.size(); k++) {
+                    if (i == k) continue; // Can't compare with self
 
                     N currX = bodies[i].getX();
                     N currY = bodies[i].getY();
 
-                    N pairX = bodies[j].getX();
-                    N pairY = bodies[j].getY();
+                    N pairX = bodies[k].getX();
+                    N pairY = bodies[k].getY();
 
-                    KG currMass = bodies[i].getMass();
-                    KG pairMass = bodies[j].getMass();
+                    KG currMass = bodies[k].getMass();
+                    KG pairMass = bodies[k].getMass();
 
 
-                    Angle dir = GetDirectionFrom_1_to_2_(currX, currY, pairX, pairY);
-                    M distance = GetDistance(scale, currX, currY, pairX, pairY);
-                    N gravForce = GetGravitationalForce(distance, currMass, pairMass);
+                    Angle dir = GetDirectionFrom_1_to_2_(currX, currY, pairX, pairY); // Confirmed
+                    M distance = GetDistance(currX, currY, pairX, pairY); // Confirmed
+                    N gravForce = GetGravitationalForce(distance, currMass, pairMass); // Problem
+                    //N gravForce = 100;
                     ForceVector FVEC = splitVector(dir, gravForce);
                     Fx += FVEC.x;
                     Fy += FVEC.y;
-                    printf("[%5s] Dir: %f Fg: %fN\t", bodies[i].getLabel().c_str(), dir * RAD2DEG, gravForce);
                 }
-                
-
-
                 bodies[i].simulate(timeMultiplier, scale, Fx, Fy);
             }
 
