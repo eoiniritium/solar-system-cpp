@@ -5,14 +5,14 @@
 
 #include <iostream>
 
-typedef float N;    // Newtons
-typedef float MS_1; // ms^-1
-typedef float MS_2; // ms^-2
-typedef float KG;   // KG
-typedef float M;    // Meters
-typedef float Angle;
-typedef float VectorUnit;
-typedef float Magnitude;
+typedef double N;    // Newtons
+typedef double MS_1; // ms^-1
+typedef double MS_2; // ms^-2
+typedef double KG;   // KG
+typedef double M;    // Meters
+typedef double Angle; // Radians
+typedef double VectorUnit; // Vector
+typedef double Magnitude; // Magnitude
 
 const double G = 6.67430e-11;
 
@@ -21,18 +21,21 @@ struct ForceVector {
     VectorUnit y;
 };
 
-N GetGravitationalForce(M x1, M y1, M x2, M y2, KG m1, KG m2) {
-    
-    //     G (m1*m2)
-    // F = ---------
-    //        r^2
-    
+M convertToRealMovementValues(double scale, M pixelDistance) {
+    return (scale) * pixelDistance;
+}
+
+M GetDistance(double scale, M x1, M y1, M x2, M y2) {
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
+    M r = sqrt((dy * dy) + (dx * dx));
 
-    M r2 = (dy * dy) + (dx * dx);
+    return r;
+}
 
-    N force = G * ((m1 * m2)/ r2 );
+N GetGravitationalForce(M r, KG m1, KG m2) {
+    
+    N force = G * ((m1 * m2)/ (r*r));
 
     return force;
 }
@@ -86,7 +89,6 @@ Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) {
 }
 
 
-
 ForceVector splitVector(float direction, Magnitude magnitude) {
     // From positive X
     /*
@@ -118,37 +120,37 @@ ForceVector splitVector(float direction, Magnitude magnitude) {
     }
 
     Angle theta;
-    Magnitude x;
-    Magnitude y;
+    Magnitude Mx = 0;
+    Magnitude My = 0;
 
     if (0<=direction && direction < PI/2) { // 0<=direction < π/2
         // +x, -y
         // No changes needed
         theta = direction;
-        x = magnitude * cos(theta);
-        y = -magnitude * sin(theta);
+        Mx = magnitude * cos(theta);
+        My = -magnitude * sin(theta);
     }
     else if (PI/2 <= direction && direction < PI) { // π/2 <= direction < π
         // -x, -y
         theta = direction + PI;
-        x = -magnitude * cos(theta);
-        y = magnitude * sin(theta);
+        Mx = -magnitude * cos(theta);
+        My = magnitude * sin(theta);
 
     }
     else if (PI <= direction && direction < ((3 * PI)/2)) { // π <= direction < 3π/2
         // -x, +y
         theta = direction - PI;
-        x = -magnitude * cos(theta);
-        y = magnitude * sin(theta);
+        Mx = -magnitude * cos(theta);
+        My = magnitude * sin(theta);
     }
     else if (((3 * PI)/2) <= direction && direction < 2*PI) {
         // +x, +y
         theta = (2 * PI) - direction;
-        x = magnitude * cos(theta);
-        y = magnitude * sin(theta);
+        Mx = magnitude * cos(theta);
+        My = magnitude * sin(theta);
     }
 
-    return {x, y};
+    return {Mx, My};
 }
 
 class Body {
@@ -178,9 +180,26 @@ class Body {
         this->label = label;
     }
 
-    void simulate(N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
+    std::string getLabel() {
+        return label;
+    }
+
+    void simulate(double timeMultiplier, double scale, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
+        double dt = GetFrameTime();
+
         Fx = effectiveForceX;
         Fy = effectiveForceY;
+
+        ax = Fx / mass;
+        ay = Fy / mass;
+        printf("\tFx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", vx, vy, ax, ay);
+
+        //v = u + at
+        vx += ay * dt;
+        vy += ay * dt;
+
+        x += (vx*dt * timeMultiplier)/scale;
+        y += (vy*dt * timeMultiplier)/scale;
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
@@ -215,15 +234,15 @@ class Body {
     private:
 
     void drawResultantForce() {
-        DrawLine(x, y, x + Fx, y + Fy, RED);
+        DrawLine(x, y, x + Fx, y + Fy, WHITE);
     }
 
     void drawResultantAcceleration() {
-        DrawLine(x, y, x + ax, y + ay, GREEN);
+        DrawLine(x, y, x + ax, y + ay, RED);
     }
 
     void drawResultantVelocity() {
-        DrawLine(x, y, x + vx, y + vy, GREEN);
+        DrawLine(x, y, x + vx, y + vy, BLUE);
     }
 
     void drawLabel() {
@@ -235,7 +254,6 @@ class Body {
         this->Fy = fy;
     }
 
-    
     public:
     void drawLineAngle(Angle angle, float magnitude) {
         DrawLine(x, y, x + magnitude * cos(angle), y + magnitude * sin(angle), BLUE);

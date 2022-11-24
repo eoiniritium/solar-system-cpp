@@ -3,31 +3,29 @@
 #include "raylib.h"
 #include "body.hpp"
 
-const int ScreenWidth  = 800;
-const int ScreenHeight = 800;
+const int ScreenWidth  = 1280;
+const int ScreenHeight = 720;
+const double scale = 100000000.0f; // 1px = 100,000km = 100,000,000m
+const double timeMultiplier = 1;
+
+bool labels = true;
+bool diagnostics = true;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    SetTargetFPS(360);
-    InitWindow(ScreenHeight, ScreenWidth, "Solar System");
+    SetTargetFPS(60);
+    InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
     std::vector<Body> bodies;
-    bodies.push_back(Body("OBJ 1", 100, 100, 0, 0, 100000000, 10, GREEN));
-    bodies.push_back(Body("OBJ 2", 500, 500, 0, 0, 100000000, 10.0f, WHITE));
+    bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2,       0, 0, 5.972e24 , 10.0f, GREEN)); // Earth
+    bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e22, 10.0f, WHITE)); // Moon
 
-    bool labels = true;
-    bool diagnostics = true;
+    double framecount = 0;
 
     while(!WindowShouldClose()) {
-        Vector2 mp = GetMousePosition();
-        bodies[0].setLocation(mp.x, mp.y);
-
-        //Angle dir = GetDirectionFrom_1_to_2_(A.getX(), A.getY(), B.getX(), B.getY());
-        
-        //A.drawLineAngle(dir, 0.0f);
-        
         BeginDrawing();
             ClearBackground(BLACK);
+            printf("Frame: %g\n", ++framecount);
             for(size_t i = 0; i < bodies.size(); ++i) {
                 N Fx = 0;
                 N Fy = 0;
@@ -35,23 +33,46 @@ int main() {
                     //Body comp = bodies[i];
                     if (i == j) continue;
 
-                    Angle dir = GetDirectionFrom_1_to_2_(bodies[i].getX(), bodies[i].getY(), bodies[j].getX(), bodies[j].getY());
-                    N gravForce = GetGravitationalForce(bodies[i].getX(), bodies[i].getY(), bodies[j].getX(), bodies[j].getY(), bodies[i].getMass(), bodies[j].getMass());
+                    //N currX = convertToRealMovementValues(scale, bodies[i].getX());
+                    //N currY = convertToRealMovementValues(scale, bodies[i].getY());
+
+                    //N pairX = convertToRealMovementValues(scale, bodies[j].getX());
+                    //N pairY = convertToRealMovementValues(scale, bodies[j].getY());
+
+                    N currX = bodies[i].getX();
+                    N currY = bodies[i].getY();
+
+                    N pairX = bodies[j].getX();
+                    N pairY = bodies[j].getY();
+
+                    KG currMass = bodies[i].getMass();
+                    KG pairMass = bodies[j].getMass();
+
+
+                    Angle dir = GetDirectionFrom_1_to_2_(currX, currY, pairX, pairY);
+                    M distance = GetDistance(scale, currX, currY, pairX, pairY);
+                    N gravForce = GetGravitationalForce(distance, currMass, pairMass);
                     ForceVector FVEC = splitVector(dir, gravForce);
                     Fx += FVEC.x;
                     Fy += FVEC.y;
-                    printf("Dir: %f Fg: %f\t", dir * RAD2DEG, gravForce);
+                    printf("[%5s] Dir: %f Fg: %fN\t", bodies[i].getLabel().c_str(), dir * RAD2DEG, gravForce);
                 }
-                //printf("Fx: %f Fy: %f\n", Fx, Fy);
-                printf("\n");
+                
 
 
-                bodies[i].simulate(Fx, Fy);
+                bodies[i].simulate(timeMultiplier, scale, Fx, Fy);
             }
+
+            printf("\n");
 
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].draw(labels, diagnostics);
             }
+
+            // INFO BOX
+            DrawText("Resultant Force", ScreenWidth - 200, 10, 16, WHITE);
+            DrawText("Resultant Acceleration", ScreenWidth - 200, 30, 16, RED);
+            DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
 
         EndDrawing();
     }
