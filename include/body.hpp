@@ -31,13 +31,11 @@ M GetDistance(M x1, M y1, M x2, M y2) {
 
 N GetGravitationalForce(M r, KG m1, KG m2) {
     
-    N force = G * ((m1 * m2) / (r*r));
-    std::cout << force << std::endl;
-
+    N force = (G * m1 * m2)/(r*r); // Gravitation Equation
     return force;
 }
 
-Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) { // Confirmed
+Angle GetDirectionFrom_A_to_B(M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
 
@@ -64,8 +62,6 @@ Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) { // Confirmed
 
     Angle theta = atan(dy/dx);
     
-    //printf("Is right: %d IsBelow: %d\n", isRight, isBelow);
-
     if(isRight && !isBelow) {
         return theta;
     }
@@ -78,8 +74,6 @@ Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) { // Confirmed
     else if(isRight && isBelow) {
         return (2 * PI) - theta;
     }
-
-    std::cout << "ANGLE CALCULATION ERROR!" << std::endl;
 
     return 0.0f;
 }
@@ -181,7 +175,7 @@ class Body {
     }
 
     void simulate(double timeMultiplier, double scale, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
-        double dt = GetFrameTime();
+        double dt = GetFrameTime() * timeMultiplier;
 
         applyForceSplit(effectiveForceX, effectiveForceY);
 
