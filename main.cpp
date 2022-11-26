@@ -19,9 +19,17 @@ int main() {
 
     double framecount = 0; // Double so don'r run into overflow
 
+    // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
     Slider slider(RED, 16.0f, 0.01f, 10, 10, ScreenHeight - 40, 250, 30);
 
+    Label labelsToggleLabel("Labels", 352, ScreenHeight - 65, 20.0f, WHITE);
+    Toggle labelsToggle(&labels, 350, ScreenHeight - 40, 100, 30, RED);
+
+    Label diagnosticsToggleLabel("Diagnostics", 502, ScreenHeight - 65, 20.0f, WHITE);
+    Toggle diagnosticsToggle(&diagnostics, 500, ScreenHeight - 40, 100, 30, RED);
+
+    
     std::vector<Body> bodies;
     bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2, 0, 0, 5.972e7 , 10.0f, {68, 112, 105, 255})); // Earth
     bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e7, 10.0f, {148, 146, 142, 255})); // Moon
@@ -71,6 +79,12 @@ int main() {
 
             sliderLabel.draw();
             slider.draw(MP);
+
+            labelsToggleLabel.draw();
+            labelsToggle.draw(MP);
+
+            diagnosticsToggleLabel.draw();
+            diagnosticsToggle.draw(MP);
             
             
 

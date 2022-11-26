@@ -94,3 +94,46 @@ class Slider {
         return this->value;
     }
 };
+
+class Toggle {
+    private:
+    bool* toggle_var;
+    int x, y;
+    int width, height;
+    Color colour;
+
+    public:
+    Toggle(bool* toggle_var, int x, int y, int width, int height, Color colour) {
+        this->toggle_var = toggle_var;
+        this->x = x;
+        this->y = y;
+        this->width = width;
+        this->height = height;
+        this->colour = colour;
+    }
+
+    void draw(Vector2 mousePosition) {
+        double mx = mousePosition.x;
+        double my = mousePosition.y;
+
+        DrawRectangle(x, y, width, height, colour);
+        if(*toggle_var) {
+            DrawRectangle(x + (width/2)+2, y+2, (width/2)-4, height-4, WHITE);
+        }
+        else {
+            DrawRectangle(x+2, y+2, (width/2)-4, height-4, WHITE);
+        }
+
+        bool isMouseDown = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
+
+        double xBound = x + width;
+        double yBound = y + height;
+
+        bool inX = mx >= x && mx <= xBound;
+        bool inY = my >= y && my <= yBound;
+
+        if (isMouseDown && inX && inY) {
+            *toggle_var = !*toggle_var;
+        }
+    }
+};
