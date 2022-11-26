@@ -35,16 +35,18 @@ int main() {
             for(size_t i = 0; i < bodies.size(); ++i) {
                 N Fx = 0;
                 N Fy = 0;
+
+                M currX = bodies[i].getX();
+                M currY = bodies[i].getY();
+
+                KG currMass = bodies[i].getMass();
+
                 for(size_t k = 0; k < bodies.size(); ++k) {
                     if (i == k) continue; // Can't compare with self
 
-                    M currX = bodies[i].getX();
-                    M currY = bodies[i].getY();
-
                     M pairX = bodies[k].getX();
                     M pairY = bodies[k].getY();
-
-                    KG currMass = bodies[i].getMass();
+                    
                     KG pairMass = bodies[k].getMass();
 
 
