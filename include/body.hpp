@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <string>
 #include <cmath>
+#include <limits>
 
 
 #include <iostream>
@@ -21,11 +22,11 @@ struct ForceVector {
     VectorUnit y;
 };
 
-M GetDistance(M x1, M y1, M x2, M y2) {
+M GetDistance(double scale, M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
     M r = sqrt((dy * dy) + (dx * dx));
-
+    r = r * scale;
     return r;
 }
 
@@ -137,6 +138,7 @@ class Body {
     MS_2 ax, ay;
     N Fx, Fy;
     KG mass;
+    double scale;
 
     // Drawing
     Color col;
@@ -145,7 +147,7 @@ class Body {
 
 
     public:
-    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour) {
+    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale) {
         this->x = xLocation;
         this->y = yLocation;
         this->vx = uvx;
@@ -154,27 +156,31 @@ class Body {
         this->col = colour;
         this->radius = radius;
         this->label = label;
+        this->scale = scale;
     }
 
     std::string getLabel() {
         return label;
     }
 
-    void simulate(double timeMultiplier, double scale, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
+    void simulate(double timeMultiplier, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
         double dt = GetFrameTime() * timeMultiplier;
+        double t = timeMultiplier * dt;
+
 
         applyForceSplit(effectiveForceX, effectiveForceY);
 
-        //ax = Fx / mass;
-        //ay = Fy / mass;
-        //printf("Fx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", vx, vy, ax, ay);
+        ax = (Fx / mass) * scale;
+        ay = (Fy / mass) * scale;
+
+        printf("AX: %g AY: %g\n", ax, ay);
 
         //v = u + at
-        vx += ay * dt;
-        vy += ay * dt;
+        vx = vx + (ax * t);
+        vy = vy + (ay * t);
 
-        //x += (vx*dt * timeMultiplier)/scale;
-        //y += (vy*dt * timeMultiplier)/scale;
+        x += (vx*dt * timeMultiplier);
+        y += (vy*dt * timeMultiplier);
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
@@ -207,7 +213,8 @@ class Body {
 
     private:
     void drawResultantForce() {
-        DrawLine(x, y, x + Fx, y + Fy, GREEN);
+        //printf("P1(%g, %g) P2(%g, %g) MAXINT: %d\n",x, y, x + Fx, y + Fy, std::numeric_limits<int>::max());
+        DrawLine(x, y, x + Fx/((scale*scale*5e5)), y + (Fy/(scale*scale*5e5)), GREEN); // THIS IS THE PROBLEM
     }
 
     void drawResultantAcceleration() {

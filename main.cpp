@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 100000000.0f; // 1px = 100,000km = 100,000,000m
+const double scale = 1000000.0f; // 1px = 100,000km = 100,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
@@ -21,7 +21,7 @@ int main() {
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
-    Slider slider(RED, 16.0f, 0.01f, 10, 10, ScreenHeight - 40, 250, 30);
+    Slider slider(RED, 16.0f, 0.01f, 1, 10, ScreenHeight - 40, 250, 30);
 
     Label labelsToggleLabel("Labels", 352, ScreenHeight - 65, 20.0f, WHITE);
     Toggle labelsToggle(&labels, 350, ScreenHeight - 40, 100, 30, RED);
@@ -31,14 +31,14 @@ int main() {
 
     
     std::vector<Body> bodies;
-    bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2, 0, 0, 5.972e7 , 10.0f, {68, 112, 105, 255})); // Earth
-    bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e7, 10.0f, {148, 146, 142, 255})); // Moon
-    bodies.push_back(Body("Sun", 1000, 600, 0, 0, 100e7, 35, {252, 186, 3, 255})); // Sun
+    bodies.push_back(Body("Earth", 700, 350, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
+    bodies.push_back(Body("Moon" , 500, 500, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
+    //bodies.push_back(Body("Sun"  , 1000, 600, 0, 0, 1.989e30, 35, {252, 186, 3, 255})); // Sun
 
     while(!WindowShouldClose()) {
         // Misc
         Vector2 MP = GetMousePosition();
-        bodies[1].setLocation(MP.x, MP.y); // Moon
+        //bodies[1].setLocation(MP.x, MP.y); // Moon
 
         timeMultiplier = slider.getValue();
 
@@ -61,13 +61,14 @@ int main() {
                 KG pairMass = bodies[k].getMass();
 
                 Angle dir = GetDirectionFrom_A_to_B(currX, currY, pairX, pairY); // Confirmed
-                M distance = GetDistance(currX, currY, pairX, pairY); // Confirmed
+                M distance = GetDistance(scale, currX, currY, pairX, pairY); // Confirmed
                 N gravForce = GetGravitationalForce(distance, currMass, pairMass); // Confirmed
                 ForceVector force = splitVector(dir, gravForce); // Confirmed
                 Fx += force.x;
                 Fy += force.y;
             }
-            bodies[i].simulate(timeMultiplier, scale, Fx, Fy);
+
+            bodies[i].simulate(timeMultiplier, Fx, Fy);
         }
         
         BeginDrawing();
