@@ -7,7 +7,7 @@
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
 const double scale = 100000000.0f; // 1px = 100,000km = 100,000,000m
-const double timeMultiplier = 1;
+double timeMultiplier = 1;
 
 bool labels = true;
 bool diagnostics = true;
@@ -28,39 +28,43 @@ int main() {
     bodies.push_back(Body("Sun", 1000, 600, 0, 0, 100e7, 35, {252, 186, 3, 255})); // Sun
 
     while(!WindowShouldClose()) {
+        // Misc
+        Vector2 MP = GetMousePosition();
+        bodies[1].setLocation(MP.x, MP.y); // Moon
+
+        timeMultiplier = slider.getValue();
+
+        // Force calculations
+        for(size_t i = 0; i < bodies.size(); ++i) {
+            N Fx = 0;
+            N Fy = 0;
+
+            M currX = bodies[i].getX();
+            M currY = bodies[i].getY();
+
+            KG currMass = bodies[i].getMass();
+
+            for(size_t k = 0; k < bodies.size(); ++k) {
+                if (i == k) continue; // Can't compare with self
+
+                M pairX = bodies[k].getX();
+                M pairY = bodies[k].getY();
+                
+                KG pairMass = bodies[k].getMass();
+
+                Angle dir = GetDirectionFrom_A_to_B(currX, currY, pairX, pairY); // Confirmed
+                M distance = GetDistance(currX, currY, pairX, pairY); // Confirmed
+                N gravForce = GetGravitationalForce(distance, currMass, pairMass); // Confirmed
+                ForceVector force = splitVector(dir, gravForce); // Confirmed
+                Fx += force.x;
+                Fy += force.y;
+            }
+            bodies[i].simulate(timeMultiplier, scale, Fx, Fy);
+        }
+        
         BeginDrawing();
             ClearBackground(BLACK);
-            Vector2 MP = GetMousePosition();
-            bodies[1].setLocation(MP.x, MP.y); // Moon
-            for(size_t i = 0; i < bodies.size(); ++i) {
-                N Fx = 0;
-                N Fy = 0;
-
-                M currX = bodies[i].getX();
-                M currY = bodies[i].getY();
-
-                KG currMass = bodies[i].getMass();
-
-                for(size_t k = 0; k < bodies.size(); ++k) {
-                    if (i == k) continue; // Can't compare with self
-
-                    M pairX = bodies[k].getX();
-                    M pairY = bodies[k].getY();
-                    
-                    KG pairMass = bodies[k].getMass();
-
-
-                    Angle dir = GetDirectionFrom_A_to_B(currX, currY, pairX, pairY); // Confirmed
-                    M distance = GetDistance(currX, currY, pairX, pairY); // Confirmed
-                    N gravForce = GetGravitationalForce(distance, currMass, pairMass); // Confirmed
-                    ForceVector force = splitVector(dir, gravForce); // Confirmed
-                    Fx += force.x;
-                    Fy += force.y;
-                }
-                bodies[i].simulate(timeMultiplier, scale, Fx, Fy);
-            }
             
-            // Drawing
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].draw(labels, diagnostics);
             }
