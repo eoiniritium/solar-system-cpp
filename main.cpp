@@ -2,6 +2,7 @@
 #include <vector>
 #include "raylib.h"
 #include "body.hpp"
+#include "gui.hpp"
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
@@ -13,20 +14,21 @@ bool diagnostics = true;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    SetTargetFPS(60);
+    SetTargetFPS(360);
     InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
-    std::vector<Body> bodies;
-    bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2,       0, 0, 5.972e7 , 10.0f, GREEN)); // Earth
-    bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e7, 10.0f, WHITE)); // Moon
-    bodies.push_back(Body("Sun", 1000, 600, 0, 0, 100e7, 35, YELLOW));
+    double framecount = 0; // Double so don'r run into overflow
 
-    double framecount = 0;
+    Slider slider(RED, 16.0f, 0.01f, 10, 10, ScreenHeight - 40, 250, 30);
+
+    std::vector<Body> bodies;
+    bodies.push_back(Body("Earth", ScreenWidth/2, ScreenHeight/2, 0, 0, 5.972e7 , 10.0f, {68, 112, 105, 255})); // Earth
+    bodies.push_back(Body("Moon", 500, 500, 100, 0, 7.3476e7, 10.0f, {148, 146, 142, 255})); // Moon
+    bodies.push_back(Body("Sun", 1000, 600, 0, 0, 100e7, 35, {252, 186, 3, 255})); // Sun
 
     while(!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(BLACK);
-            printf("Frame: %g\n", ++framecount);
             Vector2 MP = GetMousePosition();
             bodies[1].setLocation(MP.x, MP.y); // Moon
             for(size_t i = 0; i < bodies.size(); ++i) {
@@ -35,11 +37,11 @@ int main() {
                 for(size_t k = 0; k < bodies.size(); ++k) {
                     if (i == k) continue; // Can't compare with self
 
-                    N currX = bodies[i].getX();
-                    N currY = bodies[i].getY();
+                    M currX = bodies[i].getX();
+                    M currY = bodies[i].getY();
 
-                    N pairX = bodies[k].getX();
-                    N pairY = bodies[k].getY();
+                    M pairX = bodies[k].getX();
+                    M pairY = bodies[k].getY();
 
                     KG currMass = bodies[i].getMass();
                     KG pairMass = bodies[k].getMass();
@@ -54,18 +56,27 @@ int main() {
                 }
                 bodies[i].simulate(timeMultiplier, scale, Fx, Fy);
             }
-
-            printf("\n");
-
+            
+            // Drawing
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].draw(labels, diagnostics);
             }
 
-            // INFO BOX
-            DrawText("Resultant Force", ScreenWidth - 200, 10, 16, WHITE);
-            DrawText("Resultant Acceleration", ScreenWidth - 200, 30, 16, RED);
-            DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
+            slider.draw(MP);
+            
 
+            // Diagnostic information
+            if(diagnostics) {
+                std::string frameText = "Frame #: " + std::to_string((int)++framecount);
+                DrawText(frameText.c_str() , 10, 30, 20.0f, DARKGREEN);
+                std::string dtText = "Delta T: " + std::to_string(GetFrameTime()) + "s";
+                DrawText(dtText.c_str() , 10, 50, 20.0f, DARKGREEN);
+                DrawFPS(10, 10);
+
+                DrawText("Resultant Force", ScreenWidth - 200, 10, 16, GREEN);
+                DrawText("Resultant Acceleration", ScreenWidth - 200, 30, 16, RED);
+                DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
+            }
         EndDrawing();
     }
 

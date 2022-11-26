@@ -80,22 +80,7 @@ Angle GetDirectionFrom_A_to_B(M x1, M y1, M x2, M y2) { // Confirmed
 
 
 ForceVector splitVector(float direction, Magnitude magnitude) {
-    // From positive X
-    /*
-            y
-            |
-      -x<---|--->x
-            |
-           -y
-
-    +-----------x
-    |
-    |
-    |
-    |
-    y
-    */
-
+    
     if(direction == 0) {
         return {magnitude, 0};
     }
@@ -192,15 +177,14 @@ class Body {
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
+        DrawCircle(x, y, radius, col);
+        
         if(drawLabel) this->drawLabel();
         if(drawDiagnostic) {
             drawResultantForce();
             drawResultantAcceleration();
             drawResultantVelocity();
-            //printf("[%5s] Fx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", label.c_str(), vx, vy, ax, ay);
         }
-
-        DrawCircle(x, y, radius, col);    
     }
 
     KG getMass() {
@@ -223,7 +207,7 @@ class Body {
     private:
 
     void drawResultantForce() {
-        DrawLine(x, y, x + Fx, y + Fy, WHITE);
+        DrawLine(x, y, x + Fx, y + Fy, GREEN);
     }
 
     void drawResultantAcceleration() {
