@@ -81,7 +81,7 @@ class Slider {
             positionX = mx - w/2;
         }
 
-        value = ((positionX - x) / (2 * w)) + lowerBound;
+        value = ((positionX - x) / (w)) + lowerBound;
 
         // Draw Slider Grabber
         DrawRectangle(positionX, y, w, height, LIGHTGRAY);

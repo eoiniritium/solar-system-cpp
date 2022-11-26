@@ -9,6 +9,8 @@ const int ScreenHeight = 720;
 const double scale = 100000000.0f; // 1px = 100,000km = 100,000,000m
 double timeMultiplier = 1;
 
+double framecount = 0; // Double so don'r run into overflow
+
 bool labels = true;
 bool diagnostics = true;
 
@@ -17,8 +19,6 @@ int main() {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
-    double framecount = 0; // Double so don'r run into overflow
-
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
     Slider slider(RED, 16.0f, 0.01f, 10, 10, ScreenHeight - 40, 250, 30);
@@ -26,8 +26,8 @@ int main() {
     Label labelsToggleLabel("Labels", 352, ScreenHeight - 65, 20.0f, WHITE);
     Toggle labelsToggle(&labels, 350, ScreenHeight - 40, 100, 30, RED);
 
-    Label diagnosticsToggleLabel("Diagnostics", 502, ScreenHeight - 65, 20.0f, WHITE);
-    Toggle diagnosticsToggle(&diagnostics, 500, ScreenHeight - 40, 100, 30, RED);
+    Label diagnosticsToggleLabel("Diagnostics", 477, ScreenHeight - 65, 20.0f, WHITE);
+    Toggle diagnosticsToggle(&diagnostics, 475, ScreenHeight - 40, 100, 30, RED);
 
     
     std::vector<Body> bodies;
