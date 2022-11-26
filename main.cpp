@@ -14,11 +14,12 @@ bool diagnostics = true;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    SetTargetFPS(360);
+    SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
     double framecount = 0; // Double so don'r run into overflow
 
+    Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
     Slider slider(RED, 16.0f, 0.01f, 10, 10, ScreenHeight - 40, 250, 30);
 
     std::vector<Body> bodies;
@@ -62,7 +63,9 @@ int main() {
                 bodies[i].draw(labels, diagnostics);
             }
 
+            sliderLabel.draw();
             slider.draw(MP);
+            
             
 
             // Diagnostic information

@@ -29,11 +29,12 @@ M GetDistance(M x1, M y1, M x2, M y2) {
     return r;
 }
 
-N GetGravitationalForce(M r, KG m1, KG m2) {
+N GetGravitationalForce(M r, KG m1, KG m2) { // Confirmed?
     
     N force = (G * m1 * m2)/(r*r); // Gravitation Equation
     return force;
 }
+
 
 Angle GetDirectionFrom_A_to_B(M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
@@ -79,7 +80,7 @@ Angle GetDirectionFrom_A_to_B(M x1, M y1, M x2, M y2) { // Confirmed
 }
 
 
-ForceVector splitVector(float direction, Magnitude magnitude) {
+ForceVector splitVector(Angle direction, Magnitude magnitude) { // Confirmed
     
     if(direction == 0) {
         return {magnitude, 0};
@@ -205,7 +206,6 @@ class Body {
     }
 
     private:
-
     void drawResultantForce() {
         DrawLine(x, y, x + Fx, y + Fy, GREEN);
     }
@@ -225,10 +225,5 @@ class Body {
     void applyForceSplit(N fx, N fy) { // Reset forces after draw
         this->Fx = fx;
         this->Fy = fy;
-    }
-
-    public:
-    void drawLineAngle(Angle angle, float magnitude) {
-        DrawLine(x, y, x + magnitude * cos(angle), y + magnitude * sin(angle), BLUE);
     }
 };

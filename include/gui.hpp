@@ -4,6 +4,36 @@
 
 #include <iostream>
 
+class Label {
+    private:
+    std::string text;
+    int x, y;
+    double fontsize;
+    Color colour;
+
+    public:
+    Label(std::string text, int x, int y, double fontsize, Color colour) 
+    {
+        this->text = text;
+        this->x = x;
+        this->y = y;
+        this->fontsize = fontsize;
+        this->colour = colour;
+    }
+
+    void draw() {
+        DrawText(text.c_str(), x, y, fontsize, colour);
+    }
+
+    void updateText(std::string newText) {
+        this->text = newText;
+    }
+
+    std::string getString() {
+        return this->text;
+    }
+};
+
 class Slider {
     private:
     double lowerBound;
@@ -58,5 +88,9 @@ class Slider {
         DrawRectangle(positionX + (w / 2)-1, y, 2, height, colour);
 
         DrawText(std::to_string(value).c_str(), x + width + 10, y + (height - fontsize)/2, fontsize, colour);
+    }
+
+    double getValue() {
+        return this->value;
     }
 };
