@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 1000000.0f; // 1px = 1,000km = 1,000,000m
+const double scale = 10000000.0f; // 1px = 1,000km = 1,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
@@ -24,9 +24,8 @@ int main() {
 
     
     std::vector<Body> bodies;
-    size_t bodiesSize = bodies.size();
-    bodies.push_back(Body("Earth A", 700 * scale, 350 * scale, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
-    bodies.push_back(Body("Moon" , 700 * scale, 700 * scale, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
+    bodies.push_back(Body("Earth A", 3500000000, 350000000, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
+    bodies.push_back(Body("Moon" , 3500000000, 734400000, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
     //bodies.push_back(Body("Earth B", 200 * scale, 350 * scale, 29,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
     //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e30, 35, {252, 186, 3, 255})); // Sun
 
@@ -46,7 +45,7 @@ int main() {
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
-    //Button resetBodiesButton("Reset", 10, 10, 10, 10, WHITE, 16.0f, reset);
+    Button resetBodiesButton("Reset", 10, 10, 10, 10, WHITE, 16.0f);
 
     while(!WindowShouldClose()) {
         // Misc
@@ -60,7 +59,10 @@ int main() {
 
         double dT = GetFrameTime() * timeMultiplier;
 
-        //isPaused = ()
+        if (!IsWindowFocused()) {
+            isPaused = true;
+            pausedToggle.updateValue(isPaused);
+        }
 
         if(!isPaused) {
             secondsElapsed += dT;

@@ -135,6 +135,7 @@ ForceVector splitVector(Angle direction, Magnitude magnitude) { // Confirmed
 struct BodyInfo {
     M virtualX , virtualY;
     MS_1 vx, vy;
+    M scale;
 };
 
 class Body {
@@ -145,7 +146,7 @@ class Body {
     MS_2 ax, ay;
     N Fx, Fy;
     KG mass;
-    double scale;
+    M scale;
 
     BodyInfo original;
 
@@ -173,6 +174,7 @@ class Body {
         this->original.virtualY = virtualY;
         this->original.vx = vx;
         this->original.vy = vy;
+        this->original.scale = scale;
 
     }
 
