@@ -177,8 +177,10 @@ class Button {
         double mx = mousePosition.x;
         double my = mousePosition.y;
 
+        double textPxLen = MeasureText(text.c_str(), fontsize);
+
         DrawRectangle(x, y, width, height, colour);
-        DrawRectangle(x+2, y+2, width-2, height-2, WHITE);
+
         bool isMouseDown = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
 
         double xBound = x + width;
@@ -186,6 +188,15 @@ class Button {
 
         bool inX = mx >= x && mx <= xBound;
         bool inY = my >= y && my <= yBound;
+
+        if (inX && inY) {
+            DrawRectangle(x+2, y+2, width-4, height-4, GRAY); // Border radius of 2px
+        } 
+        else {
+            DrawRectangle(x+2, y+2, width-4, height-4, BLACK); // Border radius of 2px
+        }
+        
+        DrawText(text.c_str(), x + ((width - textPxLen)/2), y + (height - fontsize)/2, fontsize, colour);
 
         if (isMouseDown && inX && inY) {
             value = true;

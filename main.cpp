@@ -31,7 +31,7 @@ int main() {
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
-    Slider slider(RED, 16.0f, 50000.0f, 100000.0f, 50000.0f,  10, ScreenHeight - 40, 250, 30);
+    Slider slider(RED, 16.0f, 70000.0f, 1000000.0f, 100000.0f,  10, ScreenHeight - 40, 700, 30);
 
     Label labelsToggleLabel("Labels", 352, ScreenHeight - 65, 20.0f, WHITE);
     Toggle labelsToggle(labels, 350, ScreenHeight - 40, 100, 30, RED);
@@ -39,13 +39,13 @@ int main() {
     Label diagnosticsToggleLabel("Diagnostics", 477, ScreenHeight - 65, 20.0f, WHITE);
     Toggle diagnosticsToggle(diagnostics, 475, ScreenHeight - 40, 100, 30, RED);
 
-    Label pauseText("Paused", ScreenWidth - 100, ScreenHeight - 50, 16.0f, WHITE);
-    Toggle pausedToggle(isPaused, ScreenWidth - 100, ScreenHeight - 30, 50, 20, RED);
+    Label pauseText("Paused", ScreenWidth - 180, ScreenHeight - 50, 16.0f, WHITE);
+    Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
+    
+    Button resetBodiesButton("Reset", ScreenWidth - 110, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
     
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
-
-    Button resetBodiesButton("Reset", 10, 10, 100, 100, WHITE, 16.0f);
 
     while(!WindowShouldClose()) {
         // Misc
