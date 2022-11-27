@@ -213,7 +213,29 @@ class Button {
 };
 
 class Entry {
+    private:
+    std::string *text;
+    Color colour;
+    int x, y, width, height, maxLength;
+    double fontsize;
+    public:
+    Entry(std::string &stringvar, int maxLength, int x, int y, int width, int height, double fontsize, Color colour) {
+        this->text = &stringvar;
+        this->maxLength = maxLength;
+        this->x = x;
+        this->y = y;
+        this->width = width;
+        this->height = height;
+        this->colour = colour;
+        this->fontsize = fontsize;
+    }
 
+    void draw() {
+        DrawRectangle(x, y, width, height, colour);
+        DrawRectangle(x+2, y+2, width-4, height-4, BLACK);
+
+        // Text handling
+    }
 };
 
 enum DialogState {
@@ -235,8 +257,13 @@ class AddBodyDialog {
     std::vector<Body> *bodies; // Pointer to body vector
     bool *flag;
 
+    Entry *nameEntry;
+
     M bodyRealX, bodyVirtualX;
     M bodyRealY, bodyVirtualY;
+    MS_1 bodyUVX, bodyUVY;
+    KG bodyMass;
+    std::string bodyname;
     
     public:
     AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &flag, int screenWidth, int screenHeight) {
@@ -252,6 +279,12 @@ class AddBodyDialog {
         this->diagX = (screenWidth - width)/2 + borderThickness;
         this->diagY = (screenHeight-height)/2 + borderThickness; 
         this->state = DialogState::AddBody;
+
+        this->nameEntry = new Entry(bodyname, 10, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
+    }
+
+    ~AddBodyDialog() {
+        delete nameEntry;
     }
 
     void draw() {
@@ -272,8 +305,12 @@ class AddBodyDialog {
                 DrawRectangle(diagX + width - 48, diagY + 12, 26, 26, BLACK);
                 DrawText("X", diagX + width - 45, diagY + 13, 18.0f, WHITE);
                 if(mx >= diagX + width - 50 && mx <= diagX + width - 20 && my >= diagY + 10 && my <= diagY + 40 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    *flag = false;
+                    *flag = false; // Exits dialog
                 }
+
+                // Body name
+                DrawText("Body Name:", diagX + 5, diagY + 50, 16.0f, WHITE);
+                nameEntry->draw();
 
                 break;
             case ChooseLocation:
