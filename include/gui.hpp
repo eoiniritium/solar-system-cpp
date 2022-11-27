@@ -113,14 +113,14 @@ class Slider {
 
 class Toggle {
     private:
-    bool value;
+    bool *value;
     int x, y;
     int width, height;
     Color colour;
 
     public:
-    Toggle(bool defaultValue, int x, int y, int width, int height, Color colour) {
-        this->value = defaultValue;
+    Toggle(bool &flagVar, int x, int y, int width, int height, Color colour) {
+        this->value = &flagVar;
         this->x = x;
         this->y = y;
         this->width = width;
@@ -133,7 +133,7 @@ class Toggle {
         double my = mousePosition.y;
 
         DrawRectangle(x, y, width, height, colour);
-        if(value) {
+        if(*value) {
             DrawRectangle(x + (width/2)+2, y+2, (width/2)-4, height-4, WHITE);
         }
         else {
@@ -149,16 +149,8 @@ class Toggle {
         bool inY = my >= y && my <= yBound;
 
         if (isMouseDown && inX && inY) {
-            value = !value;
+            *value = !*value;
         }
-    }
-
-    bool getValue() {
-        return value;
-    }
-
-    void updateValue(bool value) {
-        this->value = value;
     }
 };
 
@@ -171,10 +163,10 @@ class Button {
     int height;
     Color colour;
     float fontsize;
-    bool value;
+    bool *value;
 
     public:
-    Button(std::string text, int x, int y, int width, int height, Color colour, float fontsize) {
+    Button(std::string text, bool &flagVar, int x, int y, int width, int height, Color colour, float fontsize) {
         this->text = text;
         this->x = x;
         this->y = y;
@@ -182,7 +174,8 @@ class Button {
         this->height = height;
         this->fontsize = fontsize;
         this->colour = colour;
-        value = false;
+        value = &flagVar;
+        *value = false; // For Safety. no UB
     }
 
     void draw(Vector2 mousePosition) {
@@ -211,19 +204,11 @@ class Button {
         DrawText(text.c_str(), x + ((width - textPxLen)/2), y + (height - fontsize)/2, fontsize, colour);
 
         if (isMouseDown && inX && inY) {
-            value = true;
+            *value = true;
         }
         else {
-            value = false;
+            *value = false;
         }
-    }
-
-    bool getValue() {
-        return value;
-    }
-
-    void updateValue(bool value) {
-        this->value = value;
     }
 };
 
@@ -287,7 +272,6 @@ class AddBodyDialog {
                 DrawRectangle(diagX + width - 48, diagY + 12, 26, 26, BLACK);
                 DrawText("X", diagX + width - 45, diagY + 13, 18.0f, WHITE);
                 if(mx >= diagX + width - 50 && mx <= diagX + width - 20 && my >= diagY + 10 && my <= diagY + 40 && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    std::cout << "HERE!!" << std::endl;
                     *flag = false;
                 }
 

@@ -43,9 +43,9 @@ int main() {
     Label pauseText("Paused", ScreenWidth - 180, ScreenHeight - 50, 16.0f, WHITE);
     Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
     
-    Button resetBodiesButton("Reset", ScreenWidth - 110, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
+    Button resetBodiesButton("Reset", reset, ScreenWidth - 110, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
 
-    Button addBodyButton("Add Body", ScreenWidth - 450, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
+    Button addBodyButton("Add Body", addBody, ScreenWidth - 450, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
 
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
@@ -56,25 +56,17 @@ int main() {
     while(!WindowShouldClose()) {
         // Misc
         Vector2 MP = GetMousePosition();
-        labels = labelsToggle.getValue();
-        diagnostics = diagnosticsToggle.getValue();
-        isPaused = pausedToggle.getValue();
         timeMultiplier = slider.getValue();
         timeElapsedString = "Time elapsed: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(secondsElapsed / 86400, 3)), '0') + " days"; // divide by 86400 for Seconds -> Days
         timeElapsed.updateText(timeElapsedString);
-        reset = resetBodiesButton.getValue();
-        addBody = addBodyButton.getValue();
-
         double dT = GetFrameTime() * timeMultiplier;
 
         if (!IsWindowFocused()) {
             isPaused = true;
-            pausedToggle.updateValue(isPaused);
         }
 
         if(addBody){
             isPaused = true;
-            pausedToggle.updateValue(isPaused);
         }
 
         if(!isPaused) {
@@ -155,6 +147,7 @@ int main() {
                 DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
             }
 
+            
             if (addBody) {
                 newBodyDialog.draw();
             }
@@ -168,8 +161,6 @@ int main() {
             }
             secondsElapsed = 0;
         }
-
-        std::cout << addBody << std::endl;
     }
 
     return 0;
