@@ -1,3 +1,5 @@
+#pragma once
+
 #include "raylib.h"
 #include <string>
 #include <cmath>
@@ -5,6 +7,7 @@
 
 
 #include <iostream>
+
 
 typedef double N;    // Newtons
 typedef double MS_1; // ms^-1
@@ -22,11 +25,10 @@ struct ForceVector {
     VectorUnit y;
 };
 
-M GetDistance(double scale, M x1, M y1, M x2, M y2) { // Confirmed
+M GetDistance(M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
     M r = sqrt((dy * dy) + (dx * dx));
-    r = r * scale;
     return r;
 }
 
@@ -130,15 +132,22 @@ ForceVector splitVector(Angle direction, Magnitude magnitude) { // Confirmed
     return {Mx, My};
 }
 
+struct BodyInfo {
+    M virtualX , virtualY;
+    MS_1 vx, vy;
+};
+
 class Body {
     private:
     // Mechanics
-    M x, y;
+    M virtualX, virtualY, x, y;
     MS_1 vx, vy;
     MS_2 ax, ay;
     N Fx, Fy;
     KG mass;
     double scale;
+
+    BodyInfo original;
 
     // Drawing
     Color col;
@@ -148,8 +157,10 @@ class Body {
 
     public:
     Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale) {
-        this->x = xLocation;
-        this->y = yLocation;
+        this->virtualX = xLocation;
+        this->x = xLocation / scale;
+        this->virtualY = yLocation;
+        this->y = yLocation / scale;
         this->vx = uvx;
         this->vy = uvy;
         this->mass = mass;
@@ -157,6 +168,12 @@ class Body {
         this->radius = radius;
         this->label = label;
         this->scale = scale;
+
+        this->original.virtualX = virtualX;
+        this->original.virtualY = virtualY;
+        this->original.vx = vx;
+        this->original.vy = vy;
+
     }
 
     std::string getLabel() {
@@ -164,23 +181,26 @@ class Body {
     }
 
     void simulate(double timeMultiplier, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
-        double dt = GetFrameTime() * timeMultiplier;
-        double t = timeMultiplier * dt;
-
-
+        double t = GetFrameTime() * timeMultiplier;
         applyForceSplit(effectiveForceX, effectiveForceY);
 
-        ax = (Fx / mass) * scale;
-        ay = (Fy / mass) * scale;
+        ax = (Fx) / (mass); // MATHS
+        ay = (Fy) / (mass); // MATHS
 
-        printf("AX: %g AY: %g\n", ax, ay);
+        printf("ax: %g ay: %g\n", ax, ay);
 
-        //v = u + at
+        ////v = u + at
         vx = vx + (ax * t);
         vy = vy + (ay * t);
+    }
 
-        x += (vx*dt * timeMultiplier);
-        y += (vy*dt * timeMultiplier);
+    void applyTranslations(double timeMultiplier) {
+        double t = GetFrameTime() * timeMultiplier;
+
+        virtualX += vx * t;
+        virtualY += vy * t;
+        x = virtualX / scale;
+        y = virtualY / scale;
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
@@ -199,16 +219,27 @@ class Body {
     }
 
     M getX() {
-        return x;
+        return virtualX;
     }
 
     M getY() {
-        return y;
+        return virtualY;
     }
 
     void setLocation(M x, M y) {
-        this->x = x;
-        this->y = y;
+        this->virtualX = x;
+        this->virtualY = y;
+    }
+
+    void reset() {
+        virtualX  = original.virtualX;
+        virtualY  = original.virtualY;
+        vx = original.vx;
+        vy = original.vy;
+        x = virtualX / scale;
+        y = virtualY / scale;
+        Fx = 0;
+        Fy = 0;
     }
 
     private:
@@ -217,16 +248,18 @@ class Body {
         DrawLine(x, y, x + Fx/((scale*scale*5e5)), y + (Fy/(scale*scale*5e5)), GREEN); // THIS IS THE PROBLEM
     }
 
-    void drawResultantAcceleration() {
-        DrawLine(x, y, x + ax, y + ay, RED);
-    }
-
     void drawResultantVelocity() {
         DrawLine(x, y, x + vx, y + vy, BLUE);
     }
 
+    void drawResultantAcceleration() {
+        DrawLine(x, y, x + ax, y + ay, RED);
+    }
+
     void drawLabel() {
-       DrawText(label.c_str(), x + radius, y + radius, 12.0f, col); 
+        //printf("DrawText. Label: %s, x: %g, y: %g\n", label.c_str(), x + radius, y + radius);
+        //printf("[%s] virtual (%g, %g) real (%g, %g)", label.c_str(), virtualX, virtualY, x, y);
+        DrawText(label.c_str(), x + radius, y + radius, 12.0f, col); 
     }
 
     void applyForceSplit(N fx, N fy) { // Reset forces after draw

@@ -1,8 +1,11 @@
+#pragma once
+
 #include <raylib.h>
 #include <cmath>
 #include <string>
 
 #include <iostream>
+
 
 class Label {
     private:
@@ -50,7 +53,7 @@ class Slider {
     double range;
 
     public:
-    Slider(Color colour, double fontsize, double lowerBound, double upperBound, int x, int y, int width, int height) {
+    Slider(Color colour, double fontsize, double lowerBound, double upperBound, double initialValue, int x, int y, int width, int height) {
         this->colour = colour;
         this->fontsize = fontsize;
         this->lowerBound = lowerBound;
@@ -59,9 +62,10 @@ class Slider {
         this->y = y;
         this->width = width;
         this->height = height;
+        this->value = initialValue;
         range = upperBound - lowerBound;
         w = width/(range + 1);
-        positionX = x + (width - w) / 2;
+        positionX = (w * (value - lowerBound)) + x;
     }
 
     void draw(Vector2 mouseposition) {
@@ -97,14 +101,14 @@ class Slider {
 
 class Toggle {
     private:
-    bool* toggle_var;
+    bool value;
     int x, y;
     int width, height;
     Color colour;
 
     public:
-    Toggle(bool* toggle_var, int x, int y, int width, int height, Color colour) {
-        this->toggle_var = toggle_var;
+    Toggle(bool defaultValue, int x, int y, int width, int height, Color colour) {
+        this->value = defaultValue;
         this->x = x;
         this->y = y;
         this->width = width;
@@ -117,7 +121,7 @@ class Toggle {
         double my = mousePosition.y;
 
         DrawRectangle(x, y, width, height, colour);
-        if(*toggle_var) {
+        if(value) {
             DrawRectangle(x + (width/2)+2, y+2, (width/2)-4, height-4, WHITE);
         }
         else {
@@ -133,7 +137,59 @@ class Toggle {
         bool inY = my >= y && my <= yBound;
 
         if (isMouseDown && inX && inY) {
-            *toggle_var = !*toggle_var;
+            value = !value;
         }
+    }
+
+    bool getValue() {
+        return value;
+    }
+};
+
+class Button {
+    private:
+    std::string text;
+    int x;
+    int y;
+    int width;
+    int height;
+    Color colour;
+    float fontsize;
+    bool value;
+
+    public:
+    Button(std::string text, int x, int y, int width, int height, Color colour, float fontsize) {
+        this->text = text;
+        this->x = x;
+        this->y = y;
+        this->fontsize = fontsize;
+        this->colour = colour;
+    }
+
+    void draw(Vector2 mousePosition) {
+        double mx = mousePosition.x;
+        double my = mousePosition.y;
+
+        DrawRectangle(x, y, width, height, colour);
+        //DrawRectangle(x-2, y-2, width-2, height-2, WHITE);
+        bool isMouseDown = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
+
+        double xBound = x + width;
+        double yBound = y + height;
+
+        bool inX = mx >= x && mx <= xBound;
+        bool inY = my >= y && my <= yBound;
+
+        if (isMouseDown && inX && inY) {
+            value = true;
+        }
+    }
+
+    bool getValue() {
+        return value;
+    }
+
+    void reset() {
+        value = false;
     }
 };
