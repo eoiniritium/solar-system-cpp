@@ -166,8 +166,11 @@ class Button {
         this->text = text;
         this->x = x;
         this->y = y;
+        this->width = width;
+        this->height = height;
         this->fontsize = fontsize;
         this->colour = colour;
+        value = false;
     }
 
     void draw(Vector2 mousePosition) {
@@ -175,7 +178,7 @@ class Button {
         double my = mousePosition.y;
 
         DrawRectangle(x, y, width, height, colour);
-        //DrawRectangle(x-2, y-2, width-2, height-2, WHITE);
+        DrawRectangle(x+2, y+2, width-2, height-2, WHITE);
         bool isMouseDown = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
 
         double xBound = x + width;
@@ -187,13 +190,12 @@ class Button {
         if (isMouseDown && inX && inY) {
             value = true;
         }
+        else {
+            value = false;
+        }
     }
 
     bool getValue() {
         return value;
-    }
-
-    void reset() {
-        value = false;
     }
 };

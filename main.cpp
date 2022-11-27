@@ -45,7 +45,7 @@ int main() {
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
-    Button resetBodiesButton("Reset", 10, 10, 10, 10, WHITE, 16.0f);
+    Button resetBodiesButton("Reset", 10, 10, 100, 100, WHITE, 16.0f);
 
     while(!WindowShouldClose()) {
         // Misc
@@ -56,6 +56,7 @@ int main() {
         timeMultiplier = slider.getValue();
         timeElapsedString = "Time elapsed: " + std::to_string(secondsElapsed / 86400) + "days"; // divide by 86400 for Seconds -> Days
         timeElapsed.updateText(timeElapsedString);
+        reset = resetBodiesButton.getValue();
 
         double dT = GetFrameTime() * timeMultiplier;
 
@@ -109,8 +110,6 @@ int main() {
                 bodies[i].draw(labels, diagnostics);
             }
 
-            //resetBodiesButton.draw(MP);
-
             sliderLabel.draw();
             slider.draw(MP);
 
@@ -124,6 +123,8 @@ int main() {
             pausedToggle.draw(MP);
 
             timeElapsed.draw();
+
+            resetBodiesButton.draw(MP);
             
             
 
@@ -144,11 +145,10 @@ int main() {
 
         if(reset) {
             reset = false;
-            std::cout << "Here" << std::endl;
-            for(size_t i = 0; bodies.size(); ++i) {
-                
+            for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].reset();
             }
+            secondsElapsed = 0;
         }
     }
 

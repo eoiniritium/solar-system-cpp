@@ -170,11 +170,11 @@ class Body {
         this->label = label;
         this->scale = scale;
 
-        this->original.virtualX = virtualX;
-        this->original.virtualY = virtualY;
-        this->original.vx = vx;
-        this->original.vy = vy;
-        this->original.scale = scale;
+        original.virtualX = virtualX;
+        original.virtualY = virtualY;
+        original.vx = vx;
+        original.vy = vy;
+        original.scale = scale;
 
     }
 
@@ -189,7 +189,7 @@ class Body {
         ax = (Fx) / (mass); // MATHS
         ay = (Fy) / (mass); // MATHS
 
-        printf("ax: %g ay: %g\n", ax, ay);
+        //printf("ax: %g ay: %g\n", ax, ay);
 
         ////v = u + at
         vx = vx + (ax * t);
@@ -246,8 +246,7 @@ class Body {
 
     private:
     void drawResultantForce() {
-        //printf("P1(%g, %g) P2(%g, %g) MAXINT: %d\n",x, y, x + Fx, y + Fy, std::numeric_limits<int>::max());
-        DrawLine(x, y, x + Fx/((scale*scale*5e5)), y + (Fy/(scale*scale*5e5)), GREEN); // THIS IS THE PROBLEM
+        DrawLine(x, y, x + Fx/(scale*scale*5e5), y + Fy/(scale*scale*5e5), GREEN); // THIS IS THE PROBLEM
     }
 
     void drawResultantVelocity() {
@@ -259,8 +258,6 @@ class Body {
     }
 
     void drawLabel() {
-        //printf("DrawText. Label: %s, x: %g, y: %g\n", label.c_str(), x + radius, y + radius);
-        //printf("[%s] virtual (%g, %g) real (%g, %g)", label.c_str(), virtualX, virtualY, x, y);
         DrawText(label.c_str(), x + radius, y + radius, 12.0f, col); 
     }
 
