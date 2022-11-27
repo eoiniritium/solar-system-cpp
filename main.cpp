@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 10000000.0f; // 1px = 1,000km = 1,000,000m
+const double scale = 10000000.0f; // 1px = 10,000km = 10,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
@@ -33,11 +33,11 @@ int main() {
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
     Slider slider(RED, 16.0f, 70000.0f, 1000000.0f, 100000.0f,  10, ScreenHeight - 40, 700, 30);
 
-    Label labelsToggleLabel("Labels", 352, ScreenHeight - 65, 20.0f, WHITE);
-    Toggle labelsToggle(labels, 350, ScreenHeight - 40, 100, 30, RED);
+    Label labelsToggleLabel("Labels", ScreenWidth - 240, ScreenHeight - 50, 16.0f, WHITE);
+    Toggle labelsToggle(labels, ScreenWidth - 240, ScreenHeight - 30, 50, 20, RED);
 
-    Label diagnosticsToggleLabel("Diagnostics", 477, ScreenHeight - 65, 20.0f, WHITE);
-    Toggle diagnosticsToggle(diagnostics, 475, ScreenHeight - 40, 100, 30, RED);
+    Label diagnosticsToggleLabel("Diagnostics", ScreenWidth - 335, ScreenHeight - 50, 16.0f, WHITE);
+    Toggle diagnosticsToggle(diagnostics, ScreenWidth - 335, ScreenHeight - 30, 80, 20, RED);
 
     Label pauseText("Paused", ScreenWidth - 180, ScreenHeight - 50, 16.0f, WHITE);
     Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
