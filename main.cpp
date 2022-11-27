@@ -26,8 +26,8 @@ int main() {
     std::vector<Body> bodies;
     bodies.push_back(Body("Earth A", 3500000000, 350000000, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
     bodies.push_back(Body("Moon" , 3500000000, 734400000, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
-    //bodies.push_back(Body("Earth B", 200 * scale, 350 * scale, 29,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
-    //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e30, 35, {252, 186, 3, 255})); // Sun
+    bodies.push_back(Body("Earth B", 200 * scale, 350 * scale, 500,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
+    //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e30, 35, {252, 186, 3, 255}, scale)); // Sun
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
