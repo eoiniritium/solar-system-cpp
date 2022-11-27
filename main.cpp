@@ -16,6 +16,7 @@ bool labels = true;
 bool diagnostics = true;
 bool isPaused = false;
 bool reset = false;
+bool addBody = false;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -43,9 +44,14 @@ int main() {
     Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
     
     Button resetBodiesButton("Reset", ScreenWidth - 110, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
-    
+
+    Button addBodyButton("Add Body", ScreenWidth - 450, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
+
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
+
+    AddBodyDialog newBodyDialog(bodies, scale, addBody, ScreenWidth, ScreenHeight);
+
 
     while(!WindowShouldClose()) {
         // Misc
@@ -54,13 +60,19 @@ int main() {
         diagnostics = diagnosticsToggle.getValue();
         isPaused = pausedToggle.getValue();
         timeMultiplier = slider.getValue();
-        timeElapsedString = "Time elapsed: " + std::to_string(secondsElapsed / 86400) + "days"; // divide by 86400 for Seconds -> Days
+        timeElapsedString = "Time elapsed: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(secondsElapsed / 86400, 3)), '0') + " days"; // divide by 86400 for Seconds -> Days
         timeElapsed.updateText(timeElapsedString);
         reset = resetBodiesButton.getValue();
+        addBody = addBodyButton.getValue();
 
         double dT = GetFrameTime() * timeMultiplier;
 
         if (!IsWindowFocused()) {
+            isPaused = true;
+            pausedToggle.updateValue(isPaused);
+        }
+
+        if(addBody){
             isPaused = true;
             pausedToggle.updateValue(isPaused);
         }
@@ -125,8 +137,10 @@ int main() {
             timeElapsed.draw();
 
             resetBodiesButton.draw(MP);
-            
-            
+
+            if (!addBody) {
+                addBodyButton.draw(MP);
+            }
 
             // Diagnostic information
             if(diagnostics) {
@@ -141,6 +155,10 @@ int main() {
                 DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
             }
 
+            if (addBody) {
+                newBodyDialog.draw();
+            }
+
         EndDrawing();
 
         if(reset) {
@@ -150,6 +168,8 @@ int main() {
             }
             secondsElapsed = 0;
         }
+
+        std::cout << addBody << std::endl;
     }
 
     return 0;
