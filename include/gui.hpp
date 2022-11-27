@@ -144,6 +144,10 @@ class Toggle {
     bool getValue() {
         return value;
     }
+
+    void updateValue(bool value) {
+        this->value = value;
+    }
 };
 
 class Button {

@@ -180,8 +180,8 @@ class Body {
         return label;
     }
 
-    void simulate(double timeMultiplier, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
-        double t = GetFrameTime() * timeMultiplier;
+    void simulate(double time, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
+        double t = time;
         applyForceSplit(effectiveForceX, effectiveForceY);
 
         ax = (Fx) / (mass); // MATHS
@@ -194,8 +194,8 @@ class Body {
         vy = vy + (ay * t);
     }
 
-    void applyTranslations(double timeMultiplier) {
-        double t = GetFrameTime() * timeMultiplier;
+    void applyTranslations(double time) {
+        double t = time;
 
         virtualX += vx * t;
         virtualY += vy * t;

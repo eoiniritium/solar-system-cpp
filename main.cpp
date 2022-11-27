@@ -6,10 +6,11 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 1000000.0f; // 1px = 100,000km = 100,000,000m
+const double scale = 1000000.0f; // 1px = 1,000km = 1,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
+double secondsElapsed = 0;
 
 bool labels = true;
 bool diagnostics = true;
@@ -24,9 +25,9 @@ int main() {
     
     std::vector<Body> bodies;
     size_t bodiesSize = bodies.size();
-    bodies.push_back(Body("Earth A", 700 * scale, 350 * scale, 20, 239, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
-    bodies.push_back(Body("Earth B", 200 * scale, 350 * scale, 29,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
+    bodies.push_back(Body("Earth A", 700 * scale, 350 * scale, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
     bodies.push_back(Body("Moon" , 700 * scale, 700 * scale, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
+    //bodies.push_back(Body("Earth B", 200 * scale, 350 * scale, 29,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
     //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e30, 35, {252, 186, 3, 255})); // Sun
 
     // UI elements
@@ -42,22 +43,28 @@ int main() {
     Label pauseText("Paused", ScreenWidth - 100, ScreenHeight - 50, 16.0f, WHITE);
     Toggle pausedToggle(isPaused, ScreenWidth - 100, ScreenHeight - 30, 50, 20, RED);
     
-    std::string timeElapsedString = "Time elapsed: 0s";
+    std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
     //Button resetBodiesButton("Reset", 10, 10, 10, 10, WHITE, 16.0f, reset);
 
     while(!WindowShouldClose()) {
-        labels = labelsToggle.getValue();
-        diagnostics = diagnosticsToggle.getValue();
-        
         // Misc
         Vector2 MP = GetMousePosition();
-        //bodies[1].setLocation(MP.x, MP.y); // Moon
-
+        labels = labelsToggle.getValue();
+        diagnostics = diagnosticsToggle.getValue();
+        isPaused = pausedToggle.getValue();
         timeMultiplier = slider.getValue();
+        timeElapsedString = "Time elapsed: " + std::to_string(secondsElapsed / 86400) + "days"; // divide by 86400 for Seconds -> Days
+        timeElapsed.updateText(timeElapsedString);
+
+        double dT = GetFrameTime() * timeMultiplier;
+
+        //isPaused = ()
 
         if(!isPaused) {
+            secondsElapsed += dT;
+
             // Force calculations
             for(size_t i = 0; i < bodies.size(); ++i) {
                 N Fx = 0;
@@ -84,12 +91,12 @@ int main() {
                     Fy += force.y;
                 }
 
-                bodies[i].simulate(timeMultiplier, Fx, Fy);
+                bodies[i].simulate(dT, Fx, Fy);
             }
 
             for(size_t i = 0; i < bodies.size(); ++i) {
                 // Apply translations
-                bodies[i].applyTranslations(timeMultiplier);
+                bodies[i].applyTranslations(dT);
             }
         }
         
@@ -114,7 +121,7 @@ int main() {
             pauseText.draw();
             pausedToggle.draw(MP);
 
-            
+            timeElapsed.draw();
             
             
 
