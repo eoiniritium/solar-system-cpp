@@ -1,9 +1,13 @@
+#pragma once
+
 #include "raylib.h"
 #include <string>
 #include <cmath>
+#include <limits>
 
 
 #include <iostream>
+
 
 typedef double N;    // Newtons
 typedef double MS_1; // ms^-1
@@ -21,29 +25,23 @@ struct ForceVector {
     VectorUnit y;
 };
 
-M convertToRealMovementValues(double scale, M pixelDistance) {
-    return (scale) * pixelDistance;
-}
-
-M GetDistance(double scale, M x1, M y1, M x2, M y2) {
+M GetDistance(M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
     M r = sqrt((dy * dy) + (dx * dx));
-
     return r;
 }
 
-N GetGravitationalForce(M r, KG m1, KG m2) {
+N GetGravitationalForce(M r, KG m1, KG m2) { // Confirmed?
     
-    N force = G * ((m1 * m2)/ (r*r));
-
+    N force = (G * m1 * m2)/(r*r); // Gravitation Equation
     return force;
 }
 
-Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) {
+
+Angle GetDirectionFrom_A_to_B(M x1, M y1, M x2, M y2) { // Confirmed
     M dx = fabs(x2 - x1);
     M dy = fabs(y2 - y1);
-    //printf("dx: %f dy: %f\n", dx, dy);
 
     bool isRight = x2 >= x1; // is x2 right of x1
     bool isBelow = y2 >= y1; // is x2 below x1
@@ -68,8 +66,6 @@ Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) {
 
     Angle theta = atan(dy/dx);
     
-    //printf("Is right: %d IsBelow: %d\n", isRight, isBelow);
-
     if(isRight && !isBelow) {
         return theta;
     }
@@ -83,29 +79,12 @@ Angle GetDirectionFrom_1_to_2_(M x1, M y1, M x2, M y2) {
         return (2 * PI) - theta;
     }
 
-    std::cout << "ANGLE CALCULATION ERROR!" << std::endl;
-
     return 0.0f;
 }
 
 
-ForceVector splitVector(float direction, Magnitude magnitude) {
-    // From positive X
-    /*
-            y
-            |
-      -x<---|--->x
-            |
-           -y
-
-    +-----------x
-    |
-    |
-    |
-    |
-    y
-    */
-
+ForceVector splitVector(Angle direction, Magnitude magnitude) { // Confirmed
+    
     if(direction == 0) {
         return {magnitude, 0};
     }
@@ -153,14 +132,23 @@ ForceVector splitVector(float direction, Magnitude magnitude) {
     return {Mx, My};
 }
 
+struct BodyInfo {
+    M virtualX , virtualY;
+    MS_1 vx, vy;
+    M scale;
+};
+
 class Body {
     private:
     // Mechanics
-    M x, y;
+    M virtualX, virtualY, x, y;
     MS_1 vx, vy;
     MS_2 ax, ay;
     N Fx, Fy;
     KG mass;
+    M scale;
+
+    BodyInfo original;
 
     // Drawing
     Color col;
@@ -169,49 +157,61 @@ class Body {
 
 
     public:
-    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour) {
-        this->x = xLocation;
-        this->y = yLocation;
+    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale) {
+        this->virtualX = xLocation;
+        this->x = xLocation / scale;
+        this->virtualY = yLocation;
+        this->y = yLocation / scale;
         this->vx = uvx;
         this->vy = uvy;
         this->mass = mass;
         this->col = colour;
         this->radius = radius;
         this->label = label;
+        this->scale = scale;
+
+        original.virtualX = virtualX;
+        original.virtualY = virtualY;
+        original.vx = vx;
+        original.vy = vy;
+        original.scale = scale;
+
     }
 
     std::string getLabel() {
         return label;
     }
 
-    void simulate(double timeMultiplier, double scale, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
-        double dt = GetFrameTime();
+    void simulate(double time, N effectiveForceX, N effectiveForceY) { // Grym Cydeffaith
+        double t = time;
+        applyForceSplit(effectiveForceX, effectiveForceY);
 
-        Fx = effectiveForceX;
-        Fy = effectiveForceY;
+        ax = (Fx) / (mass); // MATHS
+        ay = (Fy) / (mass); // MATHS
 
-        ax = Fx / mass;
-        ay = Fy / mass;
-        printf("\tFx: %fms^-1 Fy: %fms^-1 AX: %fms^-2 AY: %fms^-2\n", vx, vy, ax, ay);
+        ////v = u + at
+        vx = vx + (ax * t);
+        vy = vy + (ay * t);
+    }
 
-        //v = u + at
-        vx += ay * dt;
-        vy += ay * dt;
+    void applyTranslations(double time) {
+        double t = time;
 
-        x += (vx*dt * timeMultiplier)/scale;
-        y += (vy*dt * timeMultiplier)/scale;
+        virtualX += vx * t;
+        virtualY += vy * t;
+        x = virtualX / scale;
+        y = virtualY / scale;
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
+        DrawCircle(x, y, radius, col);
+
         if(drawLabel) this->drawLabel();
         if(drawDiagnostic) {
             drawResultantForce();
             drawResultantAcceleration();
             drawResultantVelocity();
-            //printf("[%s] X: %f Y: %f R: %f\n", label.c_str(), x, y, radius);
         }
-
-        DrawCircle(x, y, radius, col);    
     }
 
     KG getMass() {
@@ -219,43 +219,48 @@ class Body {
     }
 
     M getX() {
-        return x;
+        return virtualX;
     }
 
     M getY() {
-        return y;
+        return virtualY;
     }
 
     void setLocation(M x, M y) {
-        this->x = x;
-        this->y = y;
+        this->virtualX = x;
+        this->virtualY = y;
+    }
+
+    void reset() {
+        virtualX  = original.virtualX;
+        virtualY  = original.virtualY;
+        vx = original.vx;
+        vy = original.vy;
+        x = virtualX / scale;
+        y = virtualY / scale;
+        Fx = 0;
+        Fy = 0;
     }
 
     private:
-
     void drawResultantForce() {
-        DrawLine(x, y, x + Fx, y + Fy, WHITE);
-    }
-
-    void drawResultantAcceleration() {
-        DrawLine(x, y, x + ax, y + ay, RED);
+        DrawLine(x, y, x + Fx/(scale*scale*5e5), y + Fy/(scale*scale*5e5), GREEN); // THIS IS THE PROBLEM
     }
 
     void drawResultantVelocity() {
         DrawLine(x, y, x + vx, y + vy, BLUE);
     }
 
+    void drawResultantAcceleration() {
+        DrawLine(x, y, x + ax, y + ay, RED);
+    }
+
     void drawLabel() {
-       DrawText(label.c_str(), x + radius, y + radius, 12.0f, col); 
+        DrawText(label.c_str(), x + radius, y + radius, 12.0f, col); 
     }
 
     void applyForceSplit(N fx, N fy) { // Reset forces after draw
         this->Fx = fx;
         this->Fy = fy;
-    }
-
-    public:
-    void drawLineAngle(Angle angle, float magnitude) {
-        DrawLine(x, y, x + magnitude * cos(angle), y + magnitude * sin(angle), BLUE);
     }
 };
