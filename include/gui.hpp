@@ -23,6 +23,10 @@ std::string removeTrailingCharacters(std::string str, const char character) {
     return ret;
 }
 
+bool isDigits(const std::string &str) {
+    return str.find_first_not_of("0123456789.") == std::string::npos;
+}
+
 class Label {
     private:
     std::string text;
@@ -268,10 +272,10 @@ class Entry {
             if(keyCode == KEY_ENTER) {
                 focused = false;
             }
-            if(keyCode == KEY_BACKSPACE && text->length() > 0) {
+            if(keyCode == KEY_BACKSPACE && (int)(text->length()) > 0) {
                 text->pop_back();
             }
-            else if (keyChar && text->length() < maxLength){
+            else if (keyChar && (int)(text->length()) < maxLength){
                 (*text) += keyChar;
             }
         }
@@ -299,6 +303,7 @@ class AddBodyDialog {
     std::vector<Body> *bodies; // Pointer to body vector
     bool *dialogFlag;
     bool chooseLocationFlag;
+    bool addBody;
 
     Entry *nameEntry;
     std::string bodyname;
@@ -310,6 +315,8 @@ class AddBodyDialog {
     Entry *yVelocityEntry;
     std::string yVelocityString;
 
+    Button *addBodyButton;
+
     Slider *radiusSlider;
     
 
@@ -317,6 +324,7 @@ class AddBodyDialog {
     M bodyVirtualY;
     MS_1 bodyUVX, bodyUVY;
     KG bodyMass;
+    Color bodyColour;
     double radius;
 
     // For this only
@@ -338,12 +346,16 @@ class AddBodyDialog {
         this->diagY = (screenHeight - height)/2 + borderThickness; 
         this->state = DialogState::AddBody;
 
+        this->addBody = false;
+
         this->nameEntry = new Entry(bodyname, 25, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
         this->chooseLocationButton = new Button("Choose Location", chooseLocationFlag, diagX + 5, diagY + 110, 200, 50, WHITE, 16.0f);
         this->massEntry = new Entry(massString, 20, diagX + 5, diagY + 190, 200, 30, 16.0f, WHITE);
         this->xVelocityEntry = new Entry(xVelocityString, 10, diagX + 5, diagY + 250, 200, 30, 16.0f, WHITE);
         this->yVelocityEntry = new Entry(yVelocityString, 10, diagX + 5, diagY + 310, 200, 30, 16.0f, WHITE);
         this->radiusSlider = new Slider(GREEN, 16.0f, 1.0f, 30.0f, 5.0f, diagX + 5, diagY + 370, 300, 30);
+
+        this->addBodyButton = new Button("Add", addBody, diagX + 5, diagY + height - 160, width-15, 150, WHITE, 32.0f);
 
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
@@ -359,6 +371,40 @@ class AddBodyDialog {
         // Button checking
         if(chooseLocationFlag) {
             state = DialogState::ChooseLocation;
+        }
+
+        if(addBody) {
+            printf("Body name: %s\n", bodyname.c_str());
+            printf("Location: (%g, %g)\n", bodyVirtualX, bodyVirtualY);
+            
+
+            // validation
+            std::string failText = "";
+
+            if(bodyname != "") {
+
+            } else {
+                failText = "Body Name";
+            }
+
+            if (isDigits(massString) && massString != "") {
+                bodyMass = std::stod(massString);
+            }
+            else {
+                failText = "Mass";
+            }
+
+            if(isDigits(xVelocityString) && isDigits(yVelocityString) && xVelocityString != "" && yVelocityString != "") {
+                bodyUVX = std::stod(xVelocityString);
+                bodyUVY = std::stod(yVelocityString);
+            }
+            else {
+                failText = "Velocity";
+            }
+            
+            
+
+            //printf("Mass: %gKG\n", );
         }
 
         switch(state) {
@@ -385,30 +431,33 @@ class AddBodyDialog {
                 DrawText("X", diagX + width - 45, diagY + 13, 18.0f, WHITE);
                 
                 // Body name
-                DrawText("Body Name:", diagX + 5, diagY + 50, 16.0f, WHITE);
+                DrawText("Body Name", diagX + 5, diagY + 50, 16.0f, WHITE);
                 nameEntry->draw();
                 
                 // Body location
                 chooseLocationButton->draw(mousepos);
                 DrawText(locationString.c_str(), diagX + 220, diagY + 127, 16.0f, WHITE);
 
-                DrawText("Mass:", diagX + 5, diagY + 170, 16.0f, WHITE);
+                // Mass
+                DrawText("Mass", diagX + 5, diagY + 170, 16.0f, WHITE);
                 massEntry->draw();
                 DrawText("KG", diagX + 210, diagY + 197, 16.0f, WHITE);
 
-                DrawText("X velocity:", diagX + 5, diagY + 230, 16.0f, WHITE);
+                // X velocity
+                DrawText("X velocity", diagX + 5, diagY + 230, 16.0f, WHITE);
                 xVelocityEntry->draw();
                 DrawText("M/S", diagX + 210, diagY + 257, 16.0f, WHITE);
 
+                // Y velocity
                 DrawText("Y velocity", diagX + 5, diagY + 290, 16.0f, WHITE);
                 yVelocityEntry->draw();
                 DrawText("M/S", diagX + 210, diagY + 317, 16.0f, WHITE);
 
+                // Body radius
                 DrawText("Body Radius", diagX + 5, diagY + 350, 16.0f, WHITE);
                 radiusSlider->draw(mousepos);
                 radius = radiusSlider->getValue();
-
-
+                addBodyButton->draw(mousepos);
             break;
 
             case ChooseLocation:
