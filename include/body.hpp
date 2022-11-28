@@ -189,8 +189,6 @@ class Body {
         ax = (Fx) / (mass); // MATHS
         ay = (Fy) / (mass); // MATHS
 
-        //printf("ax: %g ay: %g\n", ax, ay);
-
         ////v = u + at
         vx = vx + (ax * t);
         vy = vy + (ay * t);
@@ -207,7 +205,7 @@ class Body {
 
     void draw(bool drawLabel, bool drawDiagnostic) {
         DrawCircle(x, y, radius, col);
-        
+
         if(drawLabel) this->drawLabel();
         if(drawDiagnostic) {
             drawResultantForce();

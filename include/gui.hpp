@@ -215,7 +215,6 @@ class Button {
 class Entry {
     private:
     std::string *text;
-    char* buf; // EW
     int index;
     Color colour;
     int x, y, width, height, maxLength;
@@ -231,10 +230,6 @@ class Entry {
         this->height = height;
         this->colour = colour;
         this->fontsize = fontsize;
-        this->buf = new char[maxLength];
-        for(size_t i = 0; i < maxLength; ++i) {
-            buf[i] = 0; // Set all to 0
-        }
         this->index = 0;
         this->focused = false;
     }
@@ -262,23 +257,22 @@ class Entry {
         }
 
         // Text handling
-        strcpy(buf, (*text).c_str()); // WORKS!
         if(focused) {
-            //printf("%s\n", buf);
-            int key = GetKeyPressed();
-            if(key)
-                printf("%c\n", key);
-            if(key == KEY_BACKSPACE)
-            { // Capture all backspace, otherwise _ will be added for some reason
-                if(index > 0)
-                    buf[--index] = 0;
+            int keyCode = GetKeyPressed();
+            int keyChar = GetCharPressed();
+
+            if(keyCode == KEY_ENTER) {
+                focused = false;
             }
-            else if(index < maxLength && key)
-                buf[index++] = key;
-            *text = buf;
+            if(keyCode == KEY_BACKSPACE && text->length() > 0) {
+                text->pop_back();
+            }
+            else if (keyChar && text->length() < maxLength){
+                (*text) += keyChar;
+            }
         }
 
-        DrawText(buf, this->x + 5, this->y + (height - fontsize)/2, fontsize, WHITE); // maybe just text?
+        DrawText((*text).c_str(), this->x + 5, this->y + (height - fontsize)/2, fontsize, WHITE); // maybe just text?
     }
 };
 
@@ -336,7 +330,7 @@ class AddBodyDialog {
         this->diagY = (screenHeight - height)/2 + borderThickness; 
         this->state = DialogState::AddBody;
 
-        this->nameEntry = new Entry(bodyname, 20, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
+        this->nameEntry = new Entry(bodyname, 25, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
         this->chooseLocationButton = new Button("Choose Location", chooseLocationFlag, diagX + 5, diagY + 110, 200, 50, WHITE, 16.0f);
         this->massEntry = new Entry(massString, 20, diagX + 5, diagY + 190, 200, 30, 16.0f, WHITE);
         this->xVelocityEntry = new Entry(xVelocityString, 10, diagX + 5, diagY + 250, 200, 30, 16.0f, WHITE);
@@ -394,6 +388,7 @@ class AddBodyDialog {
 
                 DrawText("X velocity:", diagX + 5, diagY + 230, 16.0f, WHITE);
                 xVelocityEntry->draw();
+                DrawText("M/S", diagX + 210, diagY + 257, 16.0f, WHITE);
 
             break;
 
@@ -423,9 +418,6 @@ class AddBodyDialog {
         massString = "";
         xVelocityString = "";
         yVelocityString = "";
-
-        //delete nameEntry; // SEGFAULT?
-        //delete chooseLocationButton;
-        //delete massEntry;
+        locationString = "";
     }
 };

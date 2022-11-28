@@ -25,14 +25,14 @@ int main() {
 
     
     std::vector<Body> bodies;
-    bodies.push_back(Body("Earth A", 3500000000, 350000000, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
+    bodies.push_back(Body("Earth", 3500000000, 350000000, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
     bodies.push_back(Body("Moon" , 3500000000, 734400000, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
-    bodies.push_back(Body("Earth B", 200 * scale, 350 * scale, 500,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
-    //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e30, 35, {252, 186, 3, 255}, scale)); // Sun
+    bodies.push_back(Body("Exo Planet", 200 * scale, 350 * scale, 500,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
+    //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e25, 35, {252, 186, 3, 255}, scale)); // Sun
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
-    Slider slider(RED, 16.0f, 70000.0f, 1000000.0f, 100000.0f,  10, ScreenHeight - 40, 700, 30);
+    Slider slider(RED, 16.0f, 70000.0f, 10000000.0f, 70000.0f,  10, ScreenHeight - 40, 700, 30);
 
     Label labelsToggleLabel("Labels", ScreenWidth - 240, ScreenHeight - 50, 16.0f, WHITE);
     Toggle labelsToggle(labels, ScreenWidth - 240, ScreenHeight - 30, 50, 20, RED);
@@ -87,7 +87,7 @@ int main() {
 
                     M pairX = bodies[k].getX();
                     M pairY = bodies[k].getY();
-                    
+
                     KG pairMass = bodies[k].getMass();
 
                     Angle dir = GetDirectionFrom_A_to_B(currX, currY, pairX, pairY); // Confirmed
@@ -106,10 +106,10 @@ int main() {
                 bodies[i].applyTranslations(dT);
             }
         }
-        
+
         BeginDrawing();
             ClearBackground(BLACK);
-            
+
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].draw(labels, diagnostics);
             }
