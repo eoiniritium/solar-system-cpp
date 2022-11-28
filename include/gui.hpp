@@ -16,7 +16,10 @@ double roundDecimalPlaces(double value, int decimalPlaces) {
 std::string removeTrailingCharacters(std::string str, const char character) {
     std::string ret = str;
     ret.erase(ret.find_last_not_of(character) + 1, std::string::npos);
-    
+    if(ret[ret.length()-1] == '.') {
+        ret += "0";
+    }
+
     return ret;
 }
 
@@ -76,21 +79,22 @@ class Slider {
         this->height = height;
         this->value = initialValue;
         this->range = upperBound - lowerBound;
-        this->w = width/(range + 1);
+        this->w = (width-4)/(range + 1);
         this->positionX = (w * (value - lowerBound)) + x;
     }
 
     void draw(Vector2 mouseposition) {
         double mx = mouseposition.x;
         double my = mouseposition.y;
-        DrawRectangle(x, y, width, height, {170, 176, 191, 255});
+        DrawRectangle(x, y, width, height, WHITE);
+        DrawRectangle(x+2, y+2, width-4, height-4, {170, 176, 191, 255});
 
         bool isMouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
         double xBound = x + width;
         double yBound = y + height;
 
-        bool inX = mx >= x + w/2 && mx <= xBound - w/2;
+        bool inX = mx >= x + w/2 && mx <= xBound - w/2 -2;
         bool inY = my >= y && my <= yBound; 
 
         if(isMouseDown && inX && inY) {
@@ -100,8 +104,8 @@ class Slider {
         value = ((positionX - x) / (w)) + lowerBound;
 
         // Draw Slider Grabber
-        DrawRectangle(positionX, y, w, height, LIGHTGRAY);
-        DrawRectangle(positionX + (w / 2)-1, y, 2, height, colour);
+        DrawRectangle(positionX+2, y+2, w, height-4, LIGHTGRAY);
+        DrawRectangle(positionX+2 + (w / 2)-1, y+2, 2, height-4, colour);
 
         DrawText((removeTrailingCharacters(std::to_string(roundDecimalPlaces(value, 2)), '0')).c_str(), x + width + 10, y + (height - fontsize)/2, fontsize, colour);
     }
@@ -306,10 +310,14 @@ class AddBodyDialog {
     Entry *yVelocityEntry;
     std::string yVelocityString;
 
+    Slider *radiusSlider;
+    
+
     M bodyVirtualX;
     M bodyVirtualY;
     MS_1 bodyUVX, bodyUVY;
     KG bodyMass;
+    double radius;
 
     // For this only
     std::string locationString;
@@ -318,7 +326,7 @@ class AddBodyDialog {
     AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &dialogFlag, int screenWidth, int screenHeight) {
         this->screenWidth = screenWidth;
         this->screenHeight = screenHeight;
-        this->width = 600;
+        this->width = 550;
         this->height = 600;
         this->borderThickness = 2;
         this->scale = scale;
@@ -334,6 +342,8 @@ class AddBodyDialog {
         this->chooseLocationButton = new Button("Choose Location", chooseLocationFlag, diagX + 5, diagY + 110, 200, 50, WHITE, 16.0f);
         this->massEntry = new Entry(massString, 20, diagX + 5, diagY + 190, 200, 30, 16.0f, WHITE);
         this->xVelocityEntry = new Entry(xVelocityString, 10, diagX + 5, diagY + 250, 200, 30, 16.0f, WHITE);
+        this->yVelocityEntry = new Entry(yVelocityString, 10, diagX + 5, diagY + 310, 200, 30, 16.0f, WHITE);
+        this->radiusSlider = new Slider(GREEN, 16.0f, 1.0f, 30.0f, 5.0f, diagX + 5, diagY + 370, 300, 30);
 
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
@@ -389,6 +399,15 @@ class AddBodyDialog {
                 DrawText("X velocity:", diagX + 5, diagY + 230, 16.0f, WHITE);
                 xVelocityEntry->draw();
                 DrawText("M/S", diagX + 210, diagY + 257, 16.0f, WHITE);
+
+                DrawText("Y velocity", diagX + 5, diagY + 290, 16.0f, WHITE);
+                yVelocityEntry->draw();
+                DrawText("M/S", diagX + 210, diagY + 317, 16.0f, WHITE);
+
+                DrawText("Body Radius", diagX + 5, diagY + 350, 16.0f, WHITE);
+                radiusSlider->draw(mousepos);
+                radius = radiusSlider->getValue();
+
 
             break;
 
