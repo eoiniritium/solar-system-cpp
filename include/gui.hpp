@@ -232,6 +232,9 @@ class Entry {
         this->colour = colour;
         this->fontsize = fontsize;
         this->buf = new char[maxLength];
+        for(size_t i = 0; i < maxLength; ++i) {
+            buf[i] = 0; // Set all to 0
+        }
         this->index = 0;
         this->focused = false;
     }
@@ -259,8 +262,12 @@ class Entry {
         }
 
         // Text handling
+        strcpy(buf, (*text).c_str()); // WORKS!
         if(focused) {
+            //printf("%s\n", buf);
             int key = GetKeyPressed();
+            if(key)
+                printf("%c\n", key);
             if(key == KEY_BACKSPACE)
             { // Capture all backspace, otherwise _ will be added for some reason
                 if(index > 0)
@@ -326,7 +333,7 @@ class AddBodyDialog {
         this->dialogFlag = &dialogFlag; // Should this be open?
 
         this->diagX = (screenWidth - width)/2 + borderThickness;
-        this->diagY = (screenHeight-height)/2 + borderThickness; 
+        this->diagY = (screenHeight - height)/2 + borderThickness; 
         this->state = DialogState::AddBody;
 
         this->nameEntry = new Entry(bodyname, 20, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
@@ -413,9 +420,12 @@ class AddBodyDialog {
         bodyUVY = 0;
         bodyMass = 0;
         bodyname = "";
+        massString = "";
+        xVelocityString = "";
+        yVelocityString = "";
 
-        delete nameEntry;
-        delete chooseLocationButton;
-        delete massEntry;
+        //delete nameEntry; // SEGFAULT?
+        //delete chooseLocationButton;
+        //delete massEntry;
     }
 };
