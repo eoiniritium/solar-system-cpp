@@ -238,7 +238,6 @@ class Entry {
 
     void draw() {
         DrawRectangle(x, y, width, height, colour);
-        
 
         if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             Vector2 mp = GetMousePosition();
@@ -247,7 +246,6 @@ class Entry {
 
             if(mx >= x && mx <= x + width && my >= y && my <= y + height) {
                 focused = true;
-                
             } else {
                 focused = false;
             }
@@ -261,14 +259,14 @@ class Entry {
         }
 
         // Text handling
-        int key = GetKeyPressed();
-        if(key && focused) {
+        if(focused) {
+            int key = GetKeyPressed();
             if(key == KEY_BACKSPACE)
             { // Capture all backspace, otherwise _ will be added for some reason
                 if(index > 0)
                     buf[--index] = 0;
             }
-            else if(index < maxLength)
+            else if(index < maxLength && key)
                 buf[index++] = key;
             *text = buf;
         }
@@ -298,13 +296,19 @@ class AddBodyDialog {
     bool chooseLocationFlag;
 
     Entry *nameEntry;
+    std::string bodyname;
     Button *chooseLocationButton;
+    Entry *massEntry;
+    std::string massString;
+    Entry *xVelocityEntry;
+    std::string xVelocityString;
+    Entry *yVelocityEntry;
+    std::string yVelocityString;
 
     M bodyVirtualX;
     M bodyVirtualY;
     MS_1 bodyUVX, bodyUVY;
     KG bodyMass;
-    std::string bodyname;
 
     // For this only
     std::string locationString;
@@ -313,7 +317,7 @@ class AddBodyDialog {
     AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &dialogFlag, int screenWidth, int screenHeight) {
         this->screenWidth = screenWidth;
         this->screenHeight = screenHeight;
-        this->width = 500;
+        this->width = 600;
         this->height = 600;
         this->borderThickness = 2;
         this->scale = scale;
@@ -327,6 +331,8 @@ class AddBodyDialog {
 
         this->nameEntry = new Entry(bodyname, 20, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
         this->chooseLocationButton = new Button("Choose Location", chooseLocationFlag, diagX + 5, diagY + 110, 200, 50, WHITE, 16.0f);
+        this->massEntry = new Entry(massString, 20, diagX + 5, diagY + 190, 200, 30, 16.0f, WHITE);
+        this->xVelocityEntry = new Entry(xVelocityString, 10, diagX + 5, diagY + 250, 200, 30, 16.0f, WHITE);
 
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
@@ -334,17 +340,12 @@ class AddBodyDialog {
         this->locationString = "X: 0 Y: 0";
     }
 
-    ~AddBodyDialog() {
-        delete nameEntry;
-    }
-
     void draw() {
         Vector2 mousepos = GetMousePosition();
         double mx = mousepos.x;
         double my = mousepos.y;
 
-        
-
+        // Button checking
         if(chooseLocationFlag) {
             state = DialogState::ChooseLocation;
         }
@@ -354,7 +355,7 @@ class AddBodyDialog {
                 // Dialog box
                 DrawRectangle((screenWidth - width)/2, (screenHeight-height)/2, width, height, WHITE);
                 DrawRectangle((screenWidth - width)/2 + borderThickness, (screenHeight-height)/2 + borderThickness, width - borderThickness * 2, height - borderThickness * 2, BLACK);
-                
+
                 // Title
                 DrawText("Add Body", diagX + 5, diagY + 5, 30.0f, WHITE);
 
@@ -380,7 +381,15 @@ class AddBodyDialog {
                 chooseLocationButton->draw(mousepos);
                 DrawText(locationString.c_str(), diagX + 220, diagY + 127, 16.0f, WHITE);
 
-                break;
+                DrawText("Mass:", diagX + 5, diagY + 170, 16.0f, WHITE);
+                massEntry->draw();
+                DrawText("KG", diagX + 210, diagY + 197, 16.0f, WHITE);
+
+                DrawText("X velocity:", diagX + 5, diagY + 230, 16.0f, WHITE);
+                xVelocityEntry->draw();
+
+            break;
+
             case ChooseLocation:
                 DrawLine(mx, 0, mx, screenHeight, WHITE);
                 DrawLine(0, my, screenWidth, my, WHITE);
@@ -393,8 +402,8 @@ class AddBodyDialog {
                     state = AddBody;
                     chooseLocationFlag = false;
                 }
-                break;
-        } 
+            break;
+        }
     }
 
     void resetAllVariables() {
@@ -405,7 +414,8 @@ class AddBodyDialog {
         bodyMass = 0;
         bodyname = "";
 
-        delete nameEntry; // No memory leak
-        this->nameEntry = new Entry(bodyname, 20, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
-    };
+        delete nameEntry;
+        delete chooseLocationButton;
+        delete massEntry;
+    }
 };
