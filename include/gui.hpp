@@ -220,6 +220,48 @@ class Button {
     }
 };
 
+class ColourPicker {
+    private:
+    int x, y, width, height;
+    Color *colourVar, colour;
+    bool flag;
+
+    public:
+    ColourPicker(Color &colourVar, Color defaultColour, int x, int y, int width, int height, Color colour) {
+        colourVar = defaultColour;
+        this->colourVar = &colourVar;
+        this->x = x;
+        this->y = y;
+        this->width = width;
+        this->height = height;
+        this->colour = colour;
+        flag = false;
+    }
+
+    void draw(Vector2 mousePosition) {
+        int mx = mousePosition.x;
+        int my = mousePosition.y;
+
+        double xBound = x + width;
+        double yBound = y + height;
+
+        bool inX = mx >= x && mx <= xBound;
+        bool inY = my >= y && my <= yBound;
+
+        if(inX && inY && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            flag = true;
+        }
+
+        if(!flag) {
+            DrawRectangle(x, y, width, height, colour);
+            DrawRectangle(x+2, y+2, width-4, height-4, *colourVar);
+        }
+        else {
+            DrawRectangle(x, y, 300, 100, WHITE);
+        }
+    }
+};
+
 class Entry {
     private:
     std::string *text;
@@ -315,6 +357,8 @@ class AddBodyDialog {
     Entry *yVelocityEntry;
     std::string yVelocityString;
 
+    ColourPicker* bodyColourPicker;
+
     Button *addBodyButton;
 
     Slider *radiusSlider;
@@ -354,8 +398,9 @@ class AddBodyDialog {
         this->xVelocityEntry = new Entry(xVelocityString, 10, diagX + 5, diagY + 250, 200, 30, 16.0f, WHITE);
         this->yVelocityEntry = new Entry(yVelocityString, 10, diagX + 5, diagY + 310, 200, 30, 16.0f, WHITE);
         this->radiusSlider = new Slider(GREEN, 16.0f, 1.0f, 30.0f, 5.0f, diagX + 5, diagY + 370, 300, 30);
+        this->bodyColourPicker = new ColourPicker(bodyColour, RED, diagX + 5, diagY + 430, 50, 30, WHITE);
 
-        this->addBodyButton = new Button("Add", addBody, diagX + 5, diagY + height - 160, width-15, 150, WHITE, 32.0f);
+        this->addBodyButton = new Button("Add", addBody, diagX + 5, diagY + height - 45, width-15, 40, WHITE, 32.0f);
 
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
@@ -457,7 +502,14 @@ class AddBodyDialog {
                 DrawText("Body Radius", diagX + 5, diagY + 350, 16.0f, WHITE);
                 radiusSlider->draw(mousepos);
                 radius = radiusSlider->getValue();
+
+                // Add Body Button
                 addBodyButton->draw(mousepos);
+
+                // Colour picker
+                DrawText("Body Colour", diagX +5, diagY + 410, 16.0f, WHITE);
+                bodyColourPicker->draw(mousepos);
+
             break;
 
             case ChooseLocation:
