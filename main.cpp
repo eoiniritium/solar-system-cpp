@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 400000000.0f; // 1px = 400,000km = 400,000,000m
+double scale = 1000000.0f; // 1px = 1,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
@@ -103,6 +103,9 @@ int main() {
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].applyTranslations(dT);
             }
+
+            //scale = scale - 100;
+            //std::cout << scale << std::endl;
         }
 
         BeginDrawing();

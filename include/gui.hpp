@@ -410,12 +410,25 @@ class AddBodyDialog {
     int borderThickness;
     int diagX;
     int diagY;
-    double scale;
+    double *scale;
     DialogState state;
     std::vector<Body> *bodies; // Pointer to body vector
     bool *dialogFlag;
     bool chooseLocationFlag;
     bool addBody;
+
+
+    //Presets
+    bool pSun;
+    bool pEarth;
+    bool pMoon;
+    bool pMars;
+
+    //Presets buttons
+    Button *pSunButton;
+    Button *pEarthButton;
+    Button *pMoonButton;
+    Button *pMarsButton;
 
     // Compare
     bool isCompare;
@@ -451,16 +464,16 @@ class AddBodyDialog {
     std::string locationString;
 
     public:
-    AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &dialogFlag, int screenWidth, int screenHeight) {
+    AddBodyDialog(std::vector<Body> &bodiesVector, double &scale, bool &dialogFlag, int screenWidth, int screenHeight) {
         this->screenWidth = screenWidth;
         this->screenHeight = screenHeight;
         this->width = 550;
         this->height = 600;
         this->borderThickness = 2;
-        this->scale = scale;
-
+        
         this->bodies = &bodiesVector; // Passed by referance
         this->dialogFlag = &dialogFlag; // Should this be open?
+        this->scale = &scale;
 
         this->diagX = (screenWidth - width)/2 + borderThickness;
         this->diagY = (screenHeight - height)/2 + borderThickness; 
@@ -481,10 +494,21 @@ class AddBodyDialog {
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
 
-        this->locationString = "X: 0 Y: 0";
+        this->locationString = "X: 0Km\nY: 0Km";
 
         this->isCompare = false;
-    }
+
+        // Presets
+        pSun = false;
+        pEarth = false;
+        pMoon = false;
+
+        // Presets Buttons
+        pSunButton   = new Button("Sun"  , pSun  , diagX + width - 120, diagY + 70 , 100, 30, WHITE, 16.0f); // 5px spacing
+        pEarthButton = new Button("Earth", pEarth, diagX + width - 120, diagY + 105, 100, 30, WHITE, 16.0f);
+        pMoonButton  = new Button("Moon" , pMoon , diagX + width - 120, diagY + 140, 100, 30, WHITE, 16.0f);
+        pMarsButton  = new Button("Mars" , pMars , diagX + width - 120, diagY + 175, 100, 30, WHITE, 16.0f);
+    }   
 
     void draw() {
         Vector2 mousepos = GetMousePosition();
@@ -495,6 +519,32 @@ class AddBodyDialog {
         if(chooseLocationFlag) {
             state = DialogState::ChooseLocation;
         }
+
+        // Preset buttons
+        if(pSun) {
+            bodyname = "Sun";
+            massString = "1.989e30";
+            bodyColour = {235, 216, 52, 255};
+
+        }
+        else if(pEarth) {
+            bodyname = "Earth";
+            massString = "5.972e24";
+            bodyColour = {52, 128, 235, 255};
+        }
+        else if(pMoon) {
+            bodyname = "Moon";
+            massString = "7.34767309e22";
+            bodyColour = {150, 150, 150, 255};
+        }
+        else if(pMars) {
+            bodyname = "Mars";
+            massString = "6.39e23";
+            bodyColour = {235, 168, 87, 255};
+        }
+
+
+
 
         // Add body button
         if(addBody) {
@@ -525,7 +575,7 @@ class AddBodyDialog {
             if(failText == "") {
                 *dialogFlag = false;
                 bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale));
-
+                resetAllVariables();
             } else {
                 // Error handling
             }
@@ -560,7 +610,7 @@ class AddBodyDialog {
                 
                 // Body location
                 chooseLocationButton->draw(mousepos);
-                DrawText(locationString.c_str(), diagX + 220, diagY + 127, 16.0f, WHITE);
+                DrawText(locationString.c_str(), diagX + 220, diagY + 115, 16.0f, WHITE);
 
                 // Mass
                 DrawText("Mass", diagX + 5, diagY + 170, 16.0f, WHITE);
@@ -588,13 +638,20 @@ class AddBodyDialog {
 
                 // Add Body Button
                 addBodyButton->draw(mousepos);
+
+                // Preset buttons
+                DrawText("Presets", diagX + width - 120, diagY + 50, 16.0f, WHITE);
+                pSunButton  ->draw(mousepos);
+                pEarthButton->draw(mousepos);
+                pMoonButton ->draw(mousepos);
+                pMarsButton ->draw(mousepos);
             break;
 
             case ChooseLocation:
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    bodyVirtualX = mx * scale;
-                    bodyVirtualY = my * scale;
-                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m Y: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
+                    bodyVirtualX = mx * (*scale);
+                    bodyVirtualY = my * (*scale);
+                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX/1000), '0') + "0Km\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY/1000), '0') + "0Km";
                     state = AddBody;
                     isCompare = false;
                     chooseLocationFlag = false;
@@ -611,7 +668,7 @@ class AddBodyDialog {
                 if(isCompare) {
                     DrawLine(cmpPointX, cmpPointY, mx, my, RED);
                     DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
-                    compareString = "Distance: " + std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * scale, cmpPointY * scale, mx * scale, my * scale)/1000, 1)) + "KM";
+                    compareString = "Distance: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * (*scale), cmpPointY * (*scale), mx * (*scale), my * (*scale))/1000, 1)), '0') + "KM";
                     
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
                     DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);

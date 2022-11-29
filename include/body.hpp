@@ -135,7 +135,6 @@ ForceVector splitVector(Angle direction, Magnitude magnitude) { // Confirmed
 struct BodyInfo {
     M virtualX , virtualY;
     MS_1 vx, vy;
-    M scale;
 };
 
 class Body {
@@ -146,7 +145,7 @@ class Body {
     MS_2 ax, ay;
     N Fx, Fy;
     KG mass;
-    M scale;
+    M *scale;
 
     BodyInfo original;
 
@@ -157,11 +156,11 @@ class Body {
 
 
     public:
-    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale) {
+    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, M *scale) {
         this->virtualX = xLocation;
-        this->x = xLocation / scale;
+        this->x = xLocation / (*scale);
         this->virtualY = yLocation;
-        this->y = yLocation / scale;
+        this->y = yLocation / (*scale);
         this->vx = uvx;
         this->vy = uvy;
         this->mass = mass;
@@ -177,7 +176,6 @@ class Body {
         original.virtualY = virtualY;
         original.vx = vx;
         original.vy = vy;
-        original.scale = scale;
 
     }
 
@@ -202,8 +200,8 @@ class Body {
 
         virtualX += vx * t;
         virtualY += vy * t;
-        x = virtualX / scale;
-        y = virtualY / scale;
+        x = virtualX / (*scale);
+        y = virtualY / (*scale);
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
@@ -239,15 +237,16 @@ class Body {
         virtualY  = original.virtualY;
         vx = original.vx;
         vy = original.vy;
-        x = virtualX / scale;
-        y = virtualY / scale;
+        x = virtualX / (*scale);
+        y = virtualY / (*scale);
         Fx = 0;
         Fy = 0;
     }
 
     private:
     void drawResultantForce() {
-        DrawLine(x, y, x + Fx/(scale*scale*5e5), y + Fy/(scale*scale*5e5), GREEN); // THIS IS THE PROBLEM
+        M s = *scale;
+        DrawLine(x, y, x + Fx/(s*s*5e5), y + Fy/(s*s*5e5), GREEN); // THIS IS THE PROBLEM
     }
 
     void drawResultantVelocity() {
