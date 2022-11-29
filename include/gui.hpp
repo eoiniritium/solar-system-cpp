@@ -417,6 +417,12 @@ class AddBodyDialog {
     bool chooseLocationFlag;
     bool addBody;
 
+    // Compare
+    bool isCompare;
+    M cmpPointX;
+    M cmpPointY;
+    std::string compareString;
+
     Entry *nameEntry;
     std::string bodyname;
     Button *chooseLocationButton;
@@ -476,6 +482,8 @@ class AddBodyDialog {
         this->bodyVirtualY = 0;
 
         this->locationString = "X: 0 Y: 0";
+
+        this->isCompare = false;
     }
 
     void draw() {
@@ -583,17 +591,37 @@ class AddBodyDialog {
             break;
 
             case ChooseLocation:
-                DrawLine(mx, 0, mx, screenHeight, WHITE);
-                DrawLine(0, my, screenWidth, my, WHITE);
-                DrawText("Click to select location", mx + 10, my + 10, 16.0f, WHITE);
-
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                     bodyVirtualX = mx * scale;
                     bodyVirtualY = my * scale;
                     locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m Y: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
                     state = AddBody;
+                    isCompare = false;
                     chooseLocationFlag = false;
                 }
+                else if(IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+                    if(!isCompare) {
+                        cmpPointX = mx;
+                        cmpPointY = my;
+                    }
+
+                    isCompare = !isCompare;
+                }
+
+                if(isCompare) {
+                    DrawLine(cmpPointX, cmpPointY, mx, my, RED);
+                    DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
+                    compareString = "Distance: " + std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * scale, cmpPointY * scale, mx * scale, my * scale)/1000, 1)) + "KM";
+                    
+                    DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
+                    DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);
+                } else {
+                    DrawText("Right Click to set distance refernce point", mx + 10, my + 10, 16.0f, WHITE);
+                }
+
+                DrawLine(mx, 0, mx, screenHeight, WHITE);
+                DrawLine(0, my, screenWidth, my, WHITE);
+                DrawText("Click to select location", mx + 10, my - 26, 16.0f, WHITE);
             break;
         }
     }
