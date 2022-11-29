@@ -259,6 +259,8 @@ class ColourPicker {
 
         bool isClick = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
 
+        bool justOpened = false; // Skip instant selection on first open
+
         // Control Expanding and Collapsing
         if(inX && inY && isClick && !flag) {
             flag = true;
@@ -277,6 +279,8 @@ class ColourPicker {
                 Color col = {r, g, b, 255};
                 choices.push_back(col);
             }
+
+            justOpened = true;
         }
 
         if(!(inNX && inNY) && isClick && flag) {
@@ -295,15 +299,35 @@ class ColourPicker {
             int xOffset;
             int yOffset;
             int c = 0;
-            for(size_t j = 0; j < 3; j++) {
-                yOffset = y+5 + j*30;
-                for(size_t i = 0; i < 6; ++i) {
-                    xOffset = x+5 + i*50;
-                    DrawRectangle(xOffset, yOffset, 40, 20, colour);
+            for(size_t i = 0; i < 3; i++) {
+                yOffset = y+5 + i*30;
+                for(size_t j = 0; j < 6; ++j) {
+                    xOffset = x+5 + j*50;
+                    DrawRectangle(xOffset, yOffset, 40, 20, colour); // Each brick is 40x20px
                     DrawRectangle(xOffset+2, yOffset+2, 36, 16, choices[c++]);
                 }
             }
             
+            if(isClick && !justOpened) {
+                int i = std::floor((mx - x - 5)/50);
+                if(my >= y+5 && my <= y + 25) { // First row
+                    *colourVar = choices[i];
+                    flag = false;
+                    choices.clear();
+                }
+                else if(my >= y+35 && my <= y + 55) {
+                    *colourVar = choices[6+i];
+                    flag = false;
+                    choices.clear();
+                }
+                else if(my >= y+65 && my <= y + 85) {
+                    *colourVar = choices[12+i];
+                    flag = false;
+                    choices.clear();
+                }
+            }
+
+            justOpened = false;
         }
     }
 };
