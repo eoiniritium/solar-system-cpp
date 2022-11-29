@@ -488,11 +488,8 @@ class AddBodyDialog {
             state = DialogState::ChooseLocation;
         }
 
+        // Add body button
         if(addBody) {
-            printf("Body name: %s\n", bodyname.c_str());
-            printf("Location: (%g, %g)\n", bodyVirtualX, bodyVirtualY);
-            
-
             // validation
             std::string failText = "";
 
@@ -515,6 +512,14 @@ class AddBodyDialog {
             }
             else {
                 failText = "Velocity";
+            }
+
+            if(failText == "") {
+                *dialogFlag = false;
+                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale));
+
+            } else {
+                // Error handling
             }
         }
 
