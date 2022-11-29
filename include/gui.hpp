@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <random>
 #include "body.hpp"
 
 #include <iostream>
@@ -21,6 +22,10 @@ std::string removeTrailingCharacters(std::string str, const char character) {
     }
 
     return ret;
+}
+
+bool isDigits(const std::string &str) {
+    return str.find_first_not_of("0123456789.eE+-") == std::string::npos;
 }
 
 class Label {
@@ -216,6 +221,117 @@ class Button {
     }
 };
 
+class ColourPicker {
+    private:
+    int x, y, width, height;
+    Color *colourVar, colour;
+    bool flag;
+    int nW, nH;
+    std::vector<Color> choices;
+
+    public:
+    ColourPicker(Color &colourVar, Color defaultColour, int x, int y, int width, int height, Color colour) {
+        colourVar = defaultColour;
+        this->colourVar = &colourVar;
+        this->x = x;
+        this->y = y;
+        this->width = width;
+        this->height = height;
+        this->colour = colour;
+        flag = false;
+
+        nW = 300;
+        nH = 90;
+    }
+
+    void draw(Vector2 mousePosition) {
+        int mx = mousePosition.x;
+        int my = mousePosition.y;
+
+        double xBound = x + width;
+        double yBound = y + height;
+
+        bool inX = mx >= x && mx <= xBound;
+        bool inY = my >= y && my <= yBound;
+
+        bool inNX = mx >= x && mx <= x + nW;
+        bool inNY = my >= y && my <= y + nH;
+
+        bool isClick = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
+
+        bool justOpened = false; // Skip instant selection on first open
+
+        // Control Expanding and Collapsing
+        if(inX && inY && isClick && !flag) {
+            flag = true;
+            // Random
+            std::random_device rd; // obtain a random number from hardware
+            std::mt19937 gen(rd()); // seed the generator
+            std::uniform_int_distribution<> distr(0, 255); // define the range
+
+            DrawRectangle(x, y, nW, nH, WHITE);
+            unsigned char r, g, b;
+            for(size_t i = 0; i < 18; ++i) {
+                r = distr(gen);
+                g = distr(gen);
+                b = distr(gen);
+
+                Color col = {r, g, b, 255};
+                choices.push_back(col);
+            }
+
+            justOpened = true;
+        }
+
+        if(!(inNX && inNY) && isClick && flag) {
+            flag = false;
+            choices.clear();
+        }
+
+
+        if(!flag) { // Hidden
+            DrawRectangle(x, y, width, height, colour);
+            DrawRectangle(x+2, y+2, width-4, height-4, *colourVar);
+        }
+        else { // Expanded
+            DrawRectangle(x, y, nW, nH, colour);
+            DrawRectangle(x+2, y+2, nW-4, nH-4, BLACK);
+            int xOffset;
+            int yOffset;
+            int c = 0;
+            for(size_t i = 0; i < 3; i++) {
+                yOffset = y+5 + i*30;
+                for(size_t j = 0; j < 6; ++j) {
+                    xOffset = x+5 + j*50;
+                    DrawRectangle(xOffset, yOffset, 40, 20, colour); // Each brick is 40x20px
+                    DrawRectangle(xOffset+2, yOffset+2, 36, 16, choices[c++]);
+                }
+            }
+            
+            if(isClick && !justOpened) {
+                int i = std::floor((mx - x - 5)/50);
+                if(my >= y+5 && my <= y + 25) { // First row
+                    *colourVar = choices[i];
+                    flag = false;
+                    choices.clear();
+                }
+                else if(my >= y+35 && my <= y + 55) {
+                    *colourVar = choices[6+i];
+                    flag = false;
+                    choices.clear();
+                }
+                else if(my >= y+65 && my <= y + 85) {
+                    *colourVar = choices[12+i];
+                    flag = false;
+                    choices.clear();
+                }
+            }
+
+            justOpened = false;
+        }
+    }
+};
+
 class Entry {
     private:
     std::string *text;
@@ -268,10 +384,10 @@ class Entry {
             if(keyCode == KEY_ENTER) {
                 focused = false;
             }
-            if(keyCode == KEY_BACKSPACE && text->length() > 0) {
+            if(keyCode == KEY_BACKSPACE && (int)(text->length()) > 0) {
                 text->pop_back();
             }
-            else if (keyChar && text->length() < maxLength){
+            else if (keyChar && (int)(text->length()) < maxLength){
                 (*text) += keyChar;
             }
         }
@@ -299,6 +415,13 @@ class AddBodyDialog {
     std::vector<Body> *bodies; // Pointer to body vector
     bool *dialogFlag;
     bool chooseLocationFlag;
+    bool addBody;
+
+    // Compare
+    bool isCompare;
+    M cmpPointX;
+    M cmpPointY;
+    std::string compareString;
 
     Entry *nameEntry;
     std::string bodyname;
@@ -310,6 +433,10 @@ class AddBodyDialog {
     Entry *yVelocityEntry;
     std::string yVelocityString;
 
+    ColourPicker* bodyColourPicker;
+
+    Button *addBodyButton;
+
     Slider *radiusSlider;
     
 
@@ -317,6 +444,7 @@ class AddBodyDialog {
     M bodyVirtualY;
     MS_1 bodyUVX, bodyUVY;
     KG bodyMass;
+    Color bodyColour;
     double radius;
 
     // For this only
@@ -338,17 +466,24 @@ class AddBodyDialog {
         this->diagY = (screenHeight - height)/2 + borderThickness; 
         this->state = DialogState::AddBody;
 
+        this->addBody = false;
+
         this->nameEntry = new Entry(bodyname, 25, diagX + 5, diagY + 70, 300, 30, 16.0f, WHITE);
         this->chooseLocationButton = new Button("Choose Location", chooseLocationFlag, diagX + 5, diagY + 110, 200, 50, WHITE, 16.0f);
         this->massEntry = new Entry(massString, 20, diagX + 5, diagY + 190, 200, 30, 16.0f, WHITE);
         this->xVelocityEntry = new Entry(xVelocityString, 10, diagX + 5, diagY + 250, 200, 30, 16.0f, WHITE);
         this->yVelocityEntry = new Entry(yVelocityString, 10, diagX + 5, diagY + 310, 200, 30, 16.0f, WHITE);
         this->radiusSlider = new Slider(GREEN, 16.0f, 1.0f, 30.0f, 5.0f, diagX + 5, diagY + 370, 300, 30);
+        this->bodyColourPicker = new ColourPicker(bodyColour, RED, diagX + 5, diagY + 430, 50, 30, WHITE);
+
+        this->addBodyButton = new Button("Add", addBody, diagX + 5, diagY + height - 45, width-15, 35, WHITE, 18.0f);
 
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
 
         this->locationString = "X: 0 Y: 0";
+
+        this->isCompare = false;
     }
 
     void draw() {
@@ -359,6 +494,41 @@ class AddBodyDialog {
         // Button checking
         if(chooseLocationFlag) {
             state = DialogState::ChooseLocation;
+        }
+
+        // Add body button
+        if(addBody) {
+            // validation
+            std::string failText = "";
+
+            if(bodyname != "") {
+
+            } else {
+                failText = "Body Name";
+            }
+
+            if (isDigits(massString) && massString != "") {
+                bodyMass = std::stod(massString);
+            }
+            else {
+                failText = "Mass";
+            }
+
+            if(isDigits(xVelocityString) && isDigits(yVelocityString) && xVelocityString != "" && yVelocityString != "") {
+                bodyUVX = std::stod(xVelocityString);
+                bodyUVY = std::stod(yVelocityString);
+            }
+            else {
+                failText = "Velocity";
+            }
+
+            if(failText == "") {
+                *dialogFlag = false;
+                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale));
+
+            } else {
+                // Error handling
+            }
         }
 
         switch(state) {
@@ -385,44 +555,73 @@ class AddBodyDialog {
                 DrawText("X", diagX + width - 45, diagY + 13, 18.0f, WHITE);
                 
                 // Body name
-                DrawText("Body Name:", diagX + 5, diagY + 50, 16.0f, WHITE);
+                DrawText("Body Name", diagX + 5, diagY + 50, 16.0f, WHITE);
                 nameEntry->draw();
                 
                 // Body location
                 chooseLocationButton->draw(mousepos);
                 DrawText(locationString.c_str(), diagX + 220, diagY + 127, 16.0f, WHITE);
 
-                DrawText("Mass:", diagX + 5, diagY + 170, 16.0f, WHITE);
+                // Mass
+                DrawText("Mass", diagX + 5, diagY + 170, 16.0f, WHITE);
                 massEntry->draw();
                 DrawText("KG", diagX + 210, diagY + 197, 16.0f, WHITE);
 
-                DrawText("X velocity:", diagX + 5, diagY + 230, 16.0f, WHITE);
+                // X velocity
+                DrawText("X velocity", diagX + 5, diagY + 230, 16.0f, WHITE);
                 xVelocityEntry->draw();
                 DrawText("M/S", diagX + 210, diagY + 257, 16.0f, WHITE);
 
+                // Y velocity
                 DrawText("Y velocity", diagX + 5, diagY + 290, 16.0f, WHITE);
                 yVelocityEntry->draw();
                 DrawText("M/S", diagX + 210, diagY + 317, 16.0f, WHITE);
 
+                // Body radius
                 DrawText("Body Radius", diagX + 5, diagY + 350, 16.0f, WHITE);
                 radiusSlider->draw(mousepos);
                 radius = radiusSlider->getValue();
 
+                // Colour picker
+                DrawText("Body Colour", diagX +5, diagY + 410, 16.0f, WHITE);
+                bodyColourPicker->draw(mousepos);
 
+                // Add Body Button
+                addBodyButton->draw(mousepos);
             break;
 
             case ChooseLocation:
-                DrawLine(mx, 0, mx, screenHeight, WHITE);
-                DrawLine(0, my, screenWidth, my, WHITE);
-                DrawText("Click to select location", mx + 10, my + 10, 16.0f, WHITE);
-
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                     bodyVirtualX = mx * scale;
                     bodyVirtualY = my * scale;
                     locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m Y: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
                     state = AddBody;
+                    isCompare = false;
                     chooseLocationFlag = false;
                 }
+                else if(IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
+                    if(!isCompare) {
+                        cmpPointX = mx;
+                        cmpPointY = my;
+                    }
+
+                    isCompare = !isCompare;
+                }
+
+                if(isCompare) {
+                    DrawLine(cmpPointX, cmpPointY, mx, my, RED);
+                    DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
+                    compareString = "Distance: " + std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * scale, cmpPointY * scale, mx * scale, my * scale)/1000, 1)) + "KM";
+                    
+                    DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
+                    DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);
+                } else {
+                    DrawText("Right Click to set distance refernce point", mx + 10, my + 10, 16.0f, WHITE);
+                }
+
+                DrawLine(mx, 0, mx, screenHeight, WHITE);
+                DrawLine(0, my, screenWidth, my, WHITE);
+                DrawText("Click to select location", mx + 10, my - 26, 16.0f, WHITE);
             break;
         }
     }

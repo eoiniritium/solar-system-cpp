@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 10000000.0f; // 1px = 10,000km = 10,000,000m
+const double scale = 400000000.0f; // 1px = 400,000km = 400,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
@@ -14,9 +14,10 @@ double secondsElapsed = 0;
 
 bool labels = true;
 bool diagnostics = true;
-bool isPaused = false;
+bool isPaused = true;
 bool reset = false;
 bool addBody = false;
+bool removeBodies = false;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -25,10 +26,6 @@ int main() {
 
     
     std::vector<Body> bodies;
-    bodies.push_back(Body("Earth", 3500000000, 350000000, 0, 0, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
-    bodies.push_back(Body("Moon" , 3500000000, 734400000, 1000, 0, 7.3476309e22, 10.0f, {148, 146, 142, 255}, scale)); // Moon
-    bodies.push_back(Body("Exo Planet", 200 * scale, 350 * scale, 500,  -100, 5.972e24 , 10.0f, {68, 112, 105, 255}, scale)); // Earth
-    //bodies.push_back(Body("Sun"  , 1000 * scale, 600 * scale, 0, 0, 1.989e25, 35, {252, 186, 3, 255}, scale)); // Sun
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
@@ -43,7 +40,7 @@ int main() {
     Label pauseText("Paused", ScreenWidth - 180, ScreenHeight - 50, 16.0f, WHITE);
     Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
     
-    Button resetBodiesButton("Reset", reset, ScreenWidth - 110, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
+    Button resetBodiesButton("Reset", reset, ScreenWidth - 110, ScreenHeight - 100, 100, 40, WHITE, 16.0f);
 
     Button addBodyButton("Add Body", addBody, ScreenWidth - 450, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
 
@@ -51,6 +48,8 @@ int main() {
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
     AddBodyDialog newBodyDialog(bodies, scale, addBody, ScreenWidth, ScreenHeight);
+
+    Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
 
     while(!WindowShouldClose()) {
@@ -102,7 +101,6 @@ int main() {
             }
 
             for(size_t i = 0; i < bodies.size(); ++i) {
-                // Apply translations
                 bodies[i].applyTranslations(dT);
             }
         }
@@ -130,6 +128,8 @@ int main() {
 
             resetBodiesButton.draw(MP);
 
+            removeAllBodies.draw(MP);
+
             if (!addBody) {
                 addBodyButton.draw(MP);
             }
@@ -150,6 +150,10 @@ int main() {
             
             if (addBody) {
                 newBodyDialog.draw();
+            }
+
+            if(removeBodies) {
+                bodies.clear();
             }
 
         EndDrawing();
