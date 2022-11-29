@@ -516,10 +516,6 @@ class AddBodyDialog {
             else {
                 failText = "Velocity";
             }
-            
-            
-
-            //printf("Mass: %gKG\n", );
         }
 
         switch(state) {
