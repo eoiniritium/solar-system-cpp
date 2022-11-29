@@ -14,7 +14,7 @@ double secondsElapsed = 0;
 
 bool labels = true;
 bool diagnostics = true;
-bool isPaused = false;
+bool isPaused = true;
 bool reset = false;
 bool addBody = false;
 bool removeBodies = false;
