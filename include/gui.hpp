@@ -25,7 +25,7 @@ std::string removeTrailingCharacters(std::string str, const char character) {
 }
 
 bool isDigits(const std::string &str) {
-    return str.find_first_not_of("0123456789.") == std::string::npos;
+    return str.find_first_not_of("0123456789.eE+-") == std::string::npos;
 }
 
 class Label {

@@ -170,6 +170,9 @@ class Body {
         this->label = label;
         this->scale = scale;
 
+        this->ax = 0;
+        this->ay = 0;
+
         original.virtualX = virtualX;
         original.virtualY = virtualY;
         original.vx = vx;

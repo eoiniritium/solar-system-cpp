@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 10000000.0f; // 1px = 10,000km = 10,000,000m
+const double scale = 400000000.0f; // 1px = 400,000km = 400,000,000m
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
@@ -17,6 +17,7 @@ bool diagnostics = true;
 bool isPaused = false;
 bool reset = false;
 bool addBody = false;
+bool removeBodies = false;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -39,7 +40,7 @@ int main() {
     Label pauseText("Paused", ScreenWidth - 180, ScreenHeight - 50, 16.0f, WHITE);
     Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
     
-    Button resetBodiesButton("Reset", reset, ScreenWidth - 110, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
+    Button resetBodiesButton("Reset", reset, ScreenWidth - 110, ScreenHeight - 100, 100, 40, WHITE, 16.0f);
 
     Button addBodyButton("Add Body", addBody, ScreenWidth - 450, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
 
@@ -47,6 +48,8 @@ int main() {
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
     AddBodyDialog newBodyDialog(bodies, scale, addBody, ScreenWidth, ScreenHeight);
+
+    Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
 
     while(!WindowShouldClose()) {
@@ -98,7 +101,6 @@ int main() {
             }
 
             for(size_t i = 0; i < bodies.size(); ++i) {
-                // Apply translations
                 bodies[i].applyTranslations(dT);
             }
         }
@@ -126,6 +128,8 @@ int main() {
 
             resetBodiesButton.draw(MP);
 
+            removeAllBodies.draw(MP);
+
             if (!addBody) {
                 addBodyButton.draw(MP);
             }
@@ -146,6 +150,10 @@ int main() {
             
             if (addBody) {
                 newBodyDialog.draw();
+            }
+
+            if(removeBodies) {
+                bodies.clear();
             }
 
         EndDrawing();
