@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <random>
 #include "body.hpp"
 
 #include <iostream>
@@ -225,6 +226,8 @@ class ColourPicker {
     int x, y, width, height;
     Color *colourVar, colour;
     bool flag;
+    int nW, nH;
+    std::vector<Color> choices;
 
     public:
     ColourPicker(Color &colourVar, Color defaultColour, int x, int y, int width, int height, Color colour) {
@@ -236,6 +239,9 @@ class ColourPicker {
         this->height = height;
         this->colour = colour;
         flag = false;
+
+        nW = 300;
+        nH = 90;
     }
 
     void draw(Vector2 mousePosition) {
@@ -248,16 +254,56 @@ class ColourPicker {
         bool inX = mx >= x && mx <= xBound;
         bool inY = my >= y && my <= yBound;
 
-        if(inX && inY && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        bool inNX = mx >= x && mx <= x + nW;
+        bool inNY = my >= y && my <= y + nH;
+
+        bool isClick = IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
+
+        // Control Expanding and Collapsing
+        if(inX && inY && isClick && !flag) {
             flag = true;
+            // Random
+            std::random_device rd; // obtain a random number from hardware
+            std::mt19937 gen(rd()); // seed the generator
+            std::uniform_int_distribution<> distr(0, 255); // define the range
+
+            DrawRectangle(x, y, nW, nH, WHITE);
+            unsigned char r, g, b;
+            for(size_t i = 0; i < 18; ++i) {
+                r = distr(gen);
+                g = distr(gen);
+                b = distr(gen);
+
+                Color col = {r, g, b, 255};
+                choices.push_back(col);
+            }
         }
 
-        if(!flag) {
+        if(!(inNX && inNY) && isClick && flag) {
+            flag = false;
+            choices.clear();
+        }
+
+
+        if(!flag) { // Hidden
             DrawRectangle(x, y, width, height, colour);
             DrawRectangle(x+2, y+2, width-4, height-4, *colourVar);
         }
-        else {
-            DrawRectangle(x, y, 300, 100, WHITE);
+        else { // Expanded
+            DrawRectangle(x, y, nW, nH, colour);
+            DrawRectangle(x+2, y+2, nW-4, nH-4, BLACK);
+            int xOffset;
+            int yOffset;
+            int c = 0;
+            for(size_t j = 0; j < 3; j++) {
+                yOffset = y+5 + j*30;
+                for(size_t i = 0; i < 6; ++i) {
+                    xOffset = x+5 + i*50;
+                    DrawRectangle(xOffset, yOffset, 40, 20, colour);
+                    DrawRectangle(xOffset+2, yOffset+2, 36, 16, choices[c++]);
+                }
+            }
+            
         }
     }
 };
@@ -400,7 +446,7 @@ class AddBodyDialog {
         this->radiusSlider = new Slider(GREEN, 16.0f, 1.0f, 30.0f, 5.0f, diagX + 5, diagY + 370, 300, 30);
         this->bodyColourPicker = new ColourPicker(bodyColour, RED, diagX + 5, diagY + 430, 50, 30, WHITE);
 
-        this->addBodyButton = new Button("Add", addBody, diagX + 5, diagY + height - 45, width-15, 40, WHITE, 32.0f);
+        this->addBodyButton = new Button("Add", addBody, diagX + 5, diagY + height - 45, width-15, 35, WHITE, 18.0f);
 
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
@@ -503,13 +549,12 @@ class AddBodyDialog {
                 radiusSlider->draw(mousepos);
                 radius = radiusSlider->getValue();
 
-                // Add Body Button
-                addBodyButton->draw(mousepos);
-
                 // Colour picker
                 DrawText("Body Colour", diagX +5, diagY + 410, 16.0f, WHITE);
                 bodyColourPicker->draw(mousepos);
 
+                // Add Body Button
+                addBodyButton->draw(mousepos);
             break;
 
             case ChooseLocation:
