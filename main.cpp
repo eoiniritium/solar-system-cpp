@@ -103,9 +103,6 @@ int main() {
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].applyTranslations(dT);
             }
-
-            //scale = scale - 100;
-            //std::cout << scale << std::endl;
         }
 
         BeginDrawing();
