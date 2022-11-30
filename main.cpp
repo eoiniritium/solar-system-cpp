@@ -36,11 +36,10 @@ int main() {
     Vector2 cameraTarget = {ScreenWidth/2, ScreenHeight/2};
     camera.target = MP;
     camera.offset = GetMousePosition();
-    int cameraSpeed = 5;
+    int cameraSpeed = 10;
     float zoomIncrement = 0.0125f;
+    std::string zoomInText = "Zoom: 1x";
 
-    
-    
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
@@ -54,7 +53,7 @@ int main() {
 
     Label pauseText("Paused", ScreenWidth - 180, ScreenHeight - 50, 16.0f, WHITE);
     Toggle pausedToggle(isPaused, ScreenWidth - 180, ScreenHeight - 30, 50, 20, RED);
-    
+
     Button resetBodiesButton("Reset", reset, ScreenWidth - 110, ScreenHeight - 100, 100, 40, WHITE, 16.0f);
 
     Button addBodyButton("Add Body", addBody, ScreenWidth - 450, ScreenHeight - 50, 100, 40, WHITE, 16.0f);
@@ -66,7 +65,6 @@ int main() {
 
     Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
-    
 
     while(!WindowShouldClose()) {
         // Misc
@@ -123,12 +121,12 @@ int main() {
 
         // Camera control
         if(!addBody) {
-            if(IsKeyDown(KEY_RIGHT)) { cameraTarget.x += cameraSpeed; }
-            if(IsKeyDown(KEY_LEFT )) { cameraTarget.x -= cameraSpeed; }
-            if(IsKeyDown(KEY_UP   )) { cameraTarget.y -= cameraSpeed; }
-            if(IsKeyDown(KEY_DOWN )) { cameraTarget.y += cameraSpeed; }
+            double i_cameraZoom = 1/cameraZoom;
+            if(IsKeyDown(KEY_RIGHT)) { cameraTarget.x += cameraSpeed * i_cameraZoom; }
+            if(IsKeyDown(KEY_LEFT )) { cameraTarget.x -= cameraSpeed * i_cameraZoom; }
+            if(IsKeyDown(KEY_UP   )) { cameraTarget.y -= cameraSpeed * i_cameraZoom; }
+            if(IsKeyDown(KEY_DOWN )) { cameraTarget.y += cameraSpeed * i_cameraZoom; }
 
-            
             if(IsKeyDown(KEY_X    )) { cameraZoom += zoomIncrement; } // Zoom in
             if(IsKeyDown(KEY_Z    )) { cameraZoom -= zoomIncrement; } // Zoom out
 
@@ -146,19 +144,26 @@ int main() {
                     bodies[i].draw(labels, diagnostics);
                 }
             if(!addBody) { EndMode2D(); }
-            
 
-            if(!addBody) { // Draw camera infomation
+            { // Draw camera infomation
                 int rectWidth = 600;
-                int rectHeight = 80;
+                int rectHeight = 60;
                 int xStart = (ScreenWidth - rectWidth)/2;
 
                 DrawRectangle(xStart , 0, rectWidth, rectHeight, WHITE);
                 DrawRectangle(xStart+2, 0, rectWidth-4, rectHeight-2, BLACK);
+                zoomInText = "Zoom: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(cameraZoom, 2)), '0') + "x";
+                DrawText(zoomInText.c_str(), xStart + 5, 5, 16.0f, WHITE);
 
-                int controlsWidth = 100;
-                DrawRectangle(xStart + rectWidth - controlsWidth, 0, rectWidth - controlsWidth, rectHeight, WHITE);
-                DrawRectangle(xStart + rectWidth - controlsWidth + 2, 0, rectWidth - controlsWidth - 4, rectHeight-2, BLACK);
+
+                int controlsWidth = 200;
+                int controlsStart = xStart + rectWidth - controlsWidth;
+                DrawRectangle(xStart + rectWidth - controlsWidth, 0, controlsWidth, rectHeight, WHITE);
+                DrawRectangle(xStart + rectWidth - controlsWidth + 2, 0, controlsWidth - 4, rectHeight-2, BLACK);
+                DrawText("Controls:", controlsStart+5, 5, 16.0f, WHITE);
+                DrawText("Zoom in: x", controlsStart+5, 21, 12.0f, WHITE);
+                DrawText("Zoom out: z", controlsStart+5, 33, 12.0f, WHITE);
+                DrawText("Arrow keys to move around", controlsStart+5, 45, 12.0f, WHITE);
             }
 
             sliderLabel.draw();
