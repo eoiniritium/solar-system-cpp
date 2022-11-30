@@ -8,6 +8,7 @@ const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
 double scale = 1000000.0f; // 1px = 1,000,000m
 double timeMultiplier = 1;
+float mouseWheel;
 
 double framecount = 0; // Double so don'r run into overflow
 double secondsElapsed = 0;
@@ -24,8 +25,22 @@ int main() {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
-    
     std::vector<Body> bodies;
+    
+    Vector2 MP = GetMousePosition();
+
+    // Camera settings
+    Camera2D camera = {0};
+    camera.zoom = 1.0f;
+    float cameraZoom = 1.0f;
+    Vector2 cameraTarget = {ScreenWidth/2, ScreenHeight/2};
+    camera.target = MP;
+    camera.offset = GetMousePosition();
+    int cameraSpeed = 5;
+    float zoomIncrement = 0.0125f;
+
+    
+    
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
@@ -51,10 +66,11 @@ int main() {
 
     Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
+    
 
     while(!WindowShouldClose()) {
         // Misc
-        Vector2 MP = GetMousePosition();
+        MP = GetMousePosition();
         timeMultiplier = slider.getValue();
         timeElapsedString = "Time elapsed: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(secondsElapsed / 86400, 3)), '0') + " days"; // divide by 86400 for Seconds -> Days
         timeElapsed.updateText(timeElapsedString);
@@ -105,11 +121,44 @@ int main() {
             }
         }
 
+        // Camera control
+        if(!addBody) {
+            if(IsKeyDown(KEY_RIGHT)) { cameraTarget.x += cameraSpeed; }
+            if(IsKeyDown(KEY_LEFT )) { cameraTarget.x -= cameraSpeed; }
+            if(IsKeyDown(KEY_UP   )) { cameraTarget.y -= cameraSpeed; }
+            if(IsKeyDown(KEY_DOWN )) { cameraTarget.y += cameraSpeed; }
+
+            
+            if(IsKeyDown(KEY_X    )) { cameraZoom += zoomIncrement; } // Zoom in
+            if(IsKeyDown(KEY_Z    )) { cameraZoom -= zoomIncrement; } // Zoom out
+
+            if(cameraZoom < zoomIncrement) { cameraZoom = zoomIncrement; } // Make zoom < 0 impossible
+
+            camera.target = cameraTarget;
+            camera.zoom   = cameraZoom;
+        }
+
         BeginDrawing();
             ClearBackground(BLACK);
 
-            for(size_t i = 0; i < bodies.size(); ++i) {
-                bodies[i].draw(labels, diagnostics);
+            if(!addBody) { BeginMode2D(camera); }
+                for(size_t i = 0; i < bodies.size(); ++i) {
+                    bodies[i].draw(labels, diagnostics);
+                }
+            if(!addBody) { EndMode2D(); }
+            
+
+            if(!addBody) { // Draw camera infomation
+                int rectWidth = 600;
+                int rectHeight = 80;
+                int xStart = (ScreenWidth - rectWidth)/2;
+
+                DrawRectangle(xStart , 0, rectWidth, rectHeight, WHITE);
+                DrawRectangle(xStart+2, 0, rectWidth-4, rectHeight-2, BLACK);
+
+                int controlsWidth = 100;
+                DrawRectangle(xStart + rectWidth - controlsWidth, 0, rectWidth - controlsWidth, rectHeight, WHITE);
+                DrawRectangle(xStart + rectWidth - controlsWidth + 2, 0, rectWidth - controlsWidth - 4, rectHeight-2, BLACK);
             }
 
             sliderLabel.draw();
