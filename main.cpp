@@ -6,7 +6,8 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-double scale = 50000000.0f; // 1px = 50,000,000m
+const double masterScale = 50000000.0f;
+double scale = masterScale; // 1px = 50,000,000m
 double timeMultiplier = 1;
 float mouseWheel;
 
@@ -30,15 +31,13 @@ int main() {
     Vector2 MP = GetMousePosition();
 
     // Camera settings
-    Camera2D camera = {0};
-    camera.zoom = 1.0f;
-    float cameraZoom = 1.0f;
-    Vector2 cameraTarget = {ScreenWidth/2, ScreenHeight/2};
-    camera.target = MP;
-    camera.offset = GetMousePosition();
-    int cameraSpeed = 10;
+    int xShift = 0;
+    int yShift = 0;
+    int xShiftSpeed = 5;
+    int yShiftSpeed = 5;
+    float zoom = 1.0f;
     float zoomIncrement = 0.0125f;
-    std::string zoomInText = "Zoom: 1x";
+    std::string zoomInText;
 
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
@@ -60,7 +59,7 @@ int main() {
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
-    AddBodyDialog newBodyDialog(bodies, scale, addBody, cameraZoom, ScreenWidth, ScreenHeight);
+    AddBodyDialog newBodyDialog(bodies, scale, addBody, zoom, ScreenWidth, ScreenHeight);
 
     Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
@@ -119,29 +118,30 @@ int main() {
 
         // Camera control
         {
-            double i_cameraZoom = 1/cameraZoom;
-            if(IsKeyDown(KEY_RIGHT)) { cameraTarget.x += cameraSpeed * i_cameraZoom; }
-            if(IsKeyDown(KEY_LEFT )) { cameraTarget.x -= cameraSpeed * i_cameraZoom; }
-            if(IsKeyDown(KEY_UP   )) { cameraTarget.y -= cameraSpeed * i_cameraZoom; }
-            if(IsKeyDown(KEY_DOWN )) { cameraTarget.y += cameraSpeed * i_cameraZoom; }
+            double i_cameraZoom = 1/zoom;
+            if(IsKeyDown(KEY_RIGHT)) { xShift -= xShiftSpeed * i_cameraZoom; }
+            if(IsKeyDown(KEY_LEFT )) { xShift += xShiftSpeed * i_cameraZoom; }
+            if(IsKeyDown(KEY_UP   )) { yShift += yShiftSpeed * i_cameraZoom; }
+            if(IsKeyDown(KEY_DOWN )) { yShift -= yShiftSpeed * i_cameraZoom; }
 
-            if(IsKeyDown(KEY_X    )) { cameraZoom += zoomIncrement; } // Zoom in
-            if(IsKeyDown(KEY_Z    )) { cameraZoom -= zoomIncrement; } // Zoom out
+            if(IsKeyDown(KEY_X    )) { zoom += zoomIncrement; } // Zoom in
+            if(IsKeyDown(KEY_Z    )) { zoom -= zoomIncrement; } // Zoom out
 
-            if(cameraZoom < zoomIncrement) { cameraZoom = zoomIncrement; } // Make zoom < 0 impossible
+            if(zoom < zoomIncrement) { zoom = zoomIncrement; } // Make zoom < 0 impossible
+            scale = masterScale / zoom;
+        
+            DrawLine(50, 50, 50 + (zoom * 50), 50, WHITE);
 
-            camera.target = cameraTarget;
-            camera.zoom   = cameraZoom;
+            //std::cout << scale << std::endl;
         }
 
         BeginDrawing();
             ClearBackground(BLACK);
 
-            BeginMode2D(camera);
-                for(size_t i = 0; i < bodies.size(); ++i) {
-                    bodies[i].draw(labels, diagnostics);
-                }
-            EndMode2D();
+            for(size_t i = 0; i < bodies.size(); ++i) {
+                bodies[i].draw(labels, diagnostics, xShift, yShift, zoom);
+                std::cout << scale << " ";
+            }
 
             { // Draw camera infomation
                 int rectWidth = 600;
@@ -150,9 +150,8 @@ int main() {
 
                 DrawRectangle(xStart , 0, rectWidth, rectHeight, WHITE);
                 DrawRectangle(xStart+2, 0, rectWidth-4, rectHeight-2, BLACK);
-                zoomInText = "Zoom: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(cameraZoom, 2)), '0') + "x";
+                zoomInText = "Zoom: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(zoom, 2)), '0') + "x";
                 DrawText(zoomInText.c_str(), xStart + 5, 5, 16.0f, WHITE);
-
 
                 int controlsWidth = 200;
                 int controlsStart = xStart + rectWidth - controlsWidth;
@@ -201,7 +200,7 @@ int main() {
 
             
             if (addBody) {
-                newBodyDialog.draw(camera);
+                newBodyDialog.draw(xShift, yShift);
             }
 
             if(removeBodies) {
@@ -216,6 +215,10 @@ int main() {
                 bodies[i].reset();
             }
             secondsElapsed = 0;
+
+            xShift = 0;
+            yShift = 0;
+            zoom = 1;
         }
     }
 

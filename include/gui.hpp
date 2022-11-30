@@ -512,7 +512,7 @@ class AddBodyDialog {
         pMarsButton  = new Button("Mars" , pMars , diagX + width - 120, diagY + 175, 100, 30, WHITE, 16.0f);
     }
 
-    void draw(Camera2D &camera) {
+    void draw(int xOffset, int yOffset) {
         Vector2 mousepos = GetMousePosition();
         double mx = mousepos.x;
         double my = mousepos.y;
@@ -650,12 +650,11 @@ class AddBodyDialog {
             break;
 
             case ChooseLocation:
-                std::cout << *zoom << std::endl;
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    bodyVirtualX = mx * (*scale) * (*zoom);
-                    bodyVirtualY = my * (*scale) * (*zoom);
+                    bodyVirtualX = (mx) * (*scale);
+                    bodyVirtualY = (my) * (*scale);
 
-                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX * (*zoom)/1000), '0') + "0Km\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY * (*zoom)/1000), '0') + "0Km";
+                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX/1000), '0') + "0Km\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY/1000), '0') + "0Km";
                     state = AddBody;
                     isCompare = false;
                     chooseLocationFlag = false;
@@ -673,7 +672,7 @@ class AddBodyDialog {
                 if(isCompare) {
                     DrawLine(cmpPointX, cmpPointY, mx, my, RED);
                     DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
-                    compareString = "Distance: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * (*scale), cmpPointY * (*scale), mx * (*scale), my * (*scale))/1000, 1)), '0') + "KM";
+                    compareString = "Distance: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(GetDistance(cmpPointX, cmpPointY, mx * (*scale), my * (*scale))/1000, 1)), '0') + "KM";
 
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
                     DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);

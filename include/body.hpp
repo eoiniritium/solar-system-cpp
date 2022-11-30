@@ -140,7 +140,7 @@ struct BodyInfo {
 class Body {
     private:
     // Mechanics
-    M virtualX, virtualY, x, y;
+    M virtualX, virtualY, x, y, xWithShift, yWithShift;
     MS_1 vx, vy;
     MS_2 ax, ay;
     N Fx, Fy;
@@ -200,14 +200,19 @@ class Body {
 
         virtualX += vx * t;
         virtualY += vy * t;
-        x = virtualX / (*scale);
-        y = virtualY / (*scale);
     }
 
-    void draw(bool drawLabel, bool drawDiagnostic) {
-        DrawCircle(x, y, radius, col);
+    void draw(bool drawLabel, bool drawDiagnostic, int xOffset, int yOffset, double zoom) {
+        x = virtualX / (*scale);
+        y = virtualY / (*scale);
+        std::cout << (*scale) << std::endl;
+        
+        xWithShift = x + xOffset;
+        yWithShift = y + yOffset;
+        double newRad = radius * zoom;
+        DrawCircle(xWithShift, yWithShift, radius, col);
 
-        if(drawLabel) this->drawLabel();
+        if(drawLabel) this->drawLabel(newRad);
         if(drawDiagnostic) {
             drawResultantForce();
             drawResultantAcceleration();
@@ -246,19 +251,19 @@ class Body {
     private:
     void drawResultantForce() {
         M s = *scale;
-        DrawLine(x, y, x + Fx/(s*s*5e5), y + Fy/(s*s*5e5), GREEN); // THIS IS THE PROBLEM
+        DrawLine(xWithShift, yWithShift, xWithShift + Fx/(s*s*5e5), yWithShift + Fy/(s*s*5e5), GREEN); // THIS IS THE PROBLEM
     }
 
     void drawResultantVelocity() {
-        DrawLine(x, y, x + vx, y + vy, BLUE);
+        DrawLine(xWithShift, yWithShift, xWithShift + vx, yWithShift + vy, BLUE);
     }
 
     void drawResultantAcceleration() {
-        DrawLine(x, y, x + ax, y + ay, RED);
+        DrawLine(xWithShift, yWithShift, xWithShift + ax, yWithShift + ay, RED);
     }
 
-    void drawLabel() {
-        DrawText(label.c_str(), x + radius, y + radius, 12.0f, col); 
+    void drawLabel(double radius) {
+        DrawText(label.c_str(), xWithShift + radius, yWithShift + radius, 12.0f, col); 
     }
 
     void applyForceSplit(N fx, N fy) { // Reset forces after draw
