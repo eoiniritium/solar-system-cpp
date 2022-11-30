@@ -416,6 +416,7 @@ class AddBodyDialog {
     bool *dialogFlag;
     bool chooseLocationFlag;
     bool addBody;
+    float *zoom;
 
 
     //Presets
@@ -451,7 +452,6 @@ class AddBodyDialog {
     Button *addBodyButton;
 
     Slider *radiusSlider;
-    
 
     M bodyVirtualX;
     M bodyVirtualY;
@@ -464,7 +464,7 @@ class AddBodyDialog {
     std::string locationString;
 
     public:
-    AddBodyDialog(std::vector<Body> &bodiesVector, double &scale, bool &dialogFlag, int screenWidth, int screenHeight) {
+    AddBodyDialog(std::vector<Body> &bodiesVector, double &scale, bool &dialogFlag, float &zoom, int screenWidth, int screenHeight) {
         this->screenWidth = screenWidth;
         this->screenHeight = screenHeight;
         this->width = 550;
@@ -498,6 +498,8 @@ class AddBodyDialog {
 
         this->isCompare = false;
 
+        this->zoom = &zoom;
+
         // Presets
         pSun = false;
         pEarth = false;
@@ -508,9 +510,9 @@ class AddBodyDialog {
         pEarthButton = new Button("Earth", pEarth, diagX + width - 120, diagY + 105, 100, 30, WHITE, 16.0f);
         pMoonButton  = new Button("Moon" , pMoon , diagX + width - 120, diagY + 140, 100, 30, WHITE, 16.0f);
         pMarsButton  = new Button("Mars" , pMars , diagX + width - 120, diagY + 175, 100, 30, WHITE, 16.0f);
-    }   
+    }
 
-    void draw() {
+    void draw(Camera2D &camera) {
         Vector2 mousepos = GetMousePosition();
         double mx = mousepos.x;
         double my = mousepos.y;
@@ -603,11 +605,11 @@ class AddBodyDialog {
                     DrawRectangle(diagX + width - 48, diagY + 12, 26, 26, BLACK);
                 }
                 DrawText("X", diagX + width - 45, diagY + 13, 18.0f, WHITE);
-                
+
                 // Body name
                 DrawText("Body Name", diagX + 5, diagY + 50, 16.0f, WHITE);
                 nameEntry->draw();
-                
+
                 // Body location
                 chooseLocationButton->draw(mousepos);
                 DrawText(locationString.c_str(), diagX + 220, diagY + 115, 16.0f, WHITE);
@@ -648,14 +650,17 @@ class AddBodyDialog {
             break;
 
             case ChooseLocation:
+                std::cout << *zoom << std::endl;
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    bodyVirtualX = mx * (*scale);
-                    bodyVirtualY = my * (*scale);
-                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX/1000), '0') + "0Km\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY/1000), '0') + "0Km";
+                    bodyVirtualX = mx * (*scale) * (*zoom);
+                    bodyVirtualY = my * (*scale) * (*zoom);
+
+                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX * (*zoom)/1000), '0') + "0Km\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY * (*zoom)/1000), '0') + "0Km";
                     state = AddBody;
                     isCompare = false;
                     chooseLocationFlag = false;
                 }
+
                 else if(IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
                     if(!isCompare) {
                         cmpPointX = mx;
@@ -669,7 +674,7 @@ class AddBodyDialog {
                     DrawLine(cmpPointX, cmpPointY, mx, my, RED);
                     DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
                     compareString = "Distance: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * (*scale), cmpPointY * (*scale), mx * (*scale), my * (*scale))/1000, 1)), '0') + "KM";
-                    
+
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
                     DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);
                 } else {

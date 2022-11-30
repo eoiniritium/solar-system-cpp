@@ -6,7 +6,7 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-double scale = 1000000.0f; // 1px = 1,000,000m
+double scale = 50000000.0f; // 1px = 50,000,000m
 double timeMultiplier = 1;
 float mouseWheel;
 
@@ -40,7 +40,6 @@ int main() {
     float zoomIncrement = 0.0125f;
     std::string zoomInText = "Zoom: 1x";
 
-
     // UI elements
     Label sliderLabel("Time multiplier", 10, ScreenHeight - 60, 20.0f, WHITE);
     Slider slider(RED, 16.0f, 70000.0f, 10000000.0f, 70000.0f,  10, ScreenHeight - 40, 700, 30);
@@ -61,10 +60,9 @@ int main() {
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
-    AddBodyDialog newBodyDialog(bodies, scale, addBody, ScreenWidth, ScreenHeight);
+    AddBodyDialog newBodyDialog(bodies, scale, addBody, cameraZoom, ScreenWidth, ScreenHeight);
 
     Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
-
 
     while(!WindowShouldClose()) {
         // Misc
@@ -120,7 +118,7 @@ int main() {
         }
 
         // Camera control
-        if(!addBody) {
+        {
             double i_cameraZoom = 1/cameraZoom;
             if(IsKeyDown(KEY_RIGHT)) { cameraTarget.x += cameraSpeed * i_cameraZoom; }
             if(IsKeyDown(KEY_LEFT )) { cameraTarget.x -= cameraSpeed * i_cameraZoom; }
@@ -139,11 +137,11 @@ int main() {
         BeginDrawing();
             ClearBackground(BLACK);
 
-            if(!addBody) { BeginMode2D(camera); }
+            BeginMode2D(camera);
                 for(size_t i = 0; i < bodies.size(); ++i) {
                     bodies[i].draw(labels, diagnostics);
                 }
-            if(!addBody) { EndMode2D(); }
+            EndMode2D();
 
             { // Draw camera infomation
                 int rectWidth = 600;
@@ -203,7 +201,7 @@ int main() {
 
             
             if (addBody) {
-                newBodyDialog.draw();
+                newBodyDialog.draw(camera);
             }
 
             if(removeBodies) {
