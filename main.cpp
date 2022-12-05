@@ -125,14 +125,14 @@ int main() {
             if(IsKeyDown(KEY_DOWN )) { yShift -= yShiftSpeed * i_cameraZoom; }
 
 
-            double zoomOffsetShift = 6 * i_cameraZoom;
+            double zoomOffsetShift = 6 * zoom;
             std::cout << zoomOffsetShift << std::endl;
             if(IsKeyDown(KEY_X    )) { zoom += zoomIncrement; xShift -= zoomOffsetShift; yShift -= zoomOffsetShift; } // Zoom in
-            if(IsKeyDown(KEY_Z    )) { zoom -= zoomIncrement; } // Zoom out
+            if(IsKeyDown(KEY_Z    )) { zoom -= zoomIncrement; xShift += zoomOffsetShift; yShift += zoomOffsetShift;} // Zoom out
 
             if(zoom < zoomIncrement) { zoom = zoomIncrement; } // Make zoom < 0 impossible
             scale = masterScale / zoom;
-        
+ 
             DrawLine(50, 50, 50 + (zoom * 50), 50, WHITE);
 
             //std::cout << scale << std::endl;

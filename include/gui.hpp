@@ -576,7 +576,7 @@ class AddBodyDialog {
 
             if(failText == "") {
                 *dialogFlag = false;
-                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale));
+                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius / (*scale), bodyColour, scale));
                 resetAllVariables();
             } else {
                 // Error handling
