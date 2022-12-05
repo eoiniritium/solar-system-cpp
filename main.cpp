@@ -124,7 +124,10 @@ int main() {
             if(IsKeyDown(KEY_UP   )) { yShift += yShiftSpeed * i_cameraZoom; }
             if(IsKeyDown(KEY_DOWN )) { yShift -= yShiftSpeed * i_cameraZoom; }
 
-            if(IsKeyDown(KEY_X    )) { zoom += zoomIncrement; } // Zoom in
+
+            double zoomOffsetShift = 6 * i_cameraZoom;
+            std::cout << zoomOffsetShift << std::endl;
+            if(IsKeyDown(KEY_X    )) { zoom += zoomIncrement; xShift -= zoomOffsetShift; yShift -= zoomOffsetShift; } // Zoom in
             if(IsKeyDown(KEY_Z    )) { zoom -= zoomIncrement; } // Zoom out
 
             if(zoom < zoomIncrement) { zoom = zoomIncrement; } // Make zoom < 0 impossible
@@ -137,10 +140,8 @@ int main() {
 
         BeginDrawing();
             ClearBackground(BLACK);
-
             for(size_t i = 0; i < bodies.size(); ++i) {
                 bodies[i].draw(labels, diagnostics, xShift, yShift, zoom);
-                std::cout << scale << " ";
             }
 
             { // Draw camera infomation

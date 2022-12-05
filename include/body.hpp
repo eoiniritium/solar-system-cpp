@@ -205,12 +205,12 @@ class Body {
     void draw(bool drawLabel, bool drawDiagnostic, int xOffset, int yOffset, double zoom) {
         x = virtualX / (*scale);
         y = virtualY / (*scale);
-        std::cout << (*scale) << std::endl;
+        //std::cout << (*scale) << std::endl;
         
         xWithShift = x + xOffset;
         yWithShift = y + yOffset;
         double newRad = radius * zoom;
-        DrawCircle(xWithShift, yWithShift, radius, col);
+        DrawCircle(xWithShift, yWithShift, newRad, col);
 
         if(drawLabel) this->drawLabel(newRad);
         if(drawDiagnostic) {
