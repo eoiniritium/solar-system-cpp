@@ -493,7 +493,7 @@ class AddBodyDialog {
         this->bodyVirtualX = 0;
         this->bodyVirtualY = 0;
 
-        this->locationString = "X: 0 Y: 0";
+        this->locationString = "X: 0m\nY: 0m";
 
         this->isCompare = false;
 
@@ -606,7 +606,7 @@ class AddBodyDialog {
                 
                 // Body location
                 chooseLocationButton->draw(mousepos);
-                DrawText(locationString.c_str(), diagX + 220, diagY + 127, 16.0f, WHITE);
+                DrawText(locationString.c_str(), diagX + 220, diagY + 117, 16.0f, WHITE);
 
                 // Mass
                 DrawText("Mass", diagX + 5, diagY + 170, 16.0f, WHITE);
@@ -648,7 +648,7 @@ class AddBodyDialog {
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
                     bodyVirtualX = mx * scale;
                     bodyVirtualY = my * scale;
-                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m Y: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
+                    locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
                     state = AddBody;
                     isCompare = false;
                     chooseLocationFlag = false;
@@ -690,6 +690,6 @@ class AddBodyDialog {
         massString = "";
         xVelocityString = "";
         yVelocityString = "";
-        locationString = "";
+        locationString = "X: 0m\nY: 0m";
     }
 };
