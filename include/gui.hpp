@@ -9,6 +9,47 @@
 
 #include <iostream>
 
+std::string getOtherSideOfSeperator(std::string const& str, const char sep, bool isGetAfter) {
+    std::string::size_type pos = str.find(sep);
+    if (pos != std::string::npos) {
+        if(!isGetAfter) {
+            return str.substr(0, pos);
+        }
+        else {
+            return str.substr(pos+1, str.length());
+        }
+    }
+    else {
+        return str;
+    }
+}
+
+template<typename T>
+std::string addCommas(T num) {
+    std::string in = std::to_string(num);
+
+    std::string ret = in;
+    std::string afterDecimal;
+
+    in = getOtherSideOfSeperator(in, '.', false);
+    afterDecimal = getOtherSideOfSeperator(ret, '.', true);
+    const int length = in.length();
+
+    if(length < 4) {
+        return ret;
+    }
+    int inserted = 0;
+    int i = length % 3;
+    if(i == 0) {
+        i = 3;
+    }
+    for(; i < length + inserted; i = i + 4) {
+        in.insert(i, ",");
+        inserted++;
+    }
+    return in + "." + afterDecimal;
+}
+
 double roundDecimalPlaces(double value, int decimalPlaces) {
     const double multiplier = std::pow(10.0f, decimalPlaces);
     return std::ceil(value * multiplier) / multiplier;
@@ -658,15 +699,14 @@ class AddBodyDialog {
                         cmpPointX = mx;
                         cmpPointY = my;
                     }
-
                     isCompare = !isCompare;
                 }
 
                 if(isCompare) {
                     DrawLine(cmpPointX, cmpPointY, mx, my, RED);
                     DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
-                    compareString = "Distance: " + std::to_string(roundDecimalPlaces(GetDistance(cmpPointX * scale, cmpPointY * scale, mx * scale, my * scale)/1000, 1)) + "KM";
-                    
+                    compareString = "Distance: " + addCommas(roundDecimalPlaces(GetDistance(cmpPointX * scale, cmpPointY * scale, mx * scale, my * scale)/1000, 1)) + "KM";
+
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
                     DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);
                 } else {
