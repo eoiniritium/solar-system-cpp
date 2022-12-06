@@ -417,6 +417,18 @@ class AddBodyDialog {
     bool chooseLocationFlag;
     bool addBody;
 
+    //Presets
+    bool pSun;
+    bool pEarth;
+    bool pMoon;
+    bool pMars;
+
+    //Presets buttons
+    Button *pSunButton;
+    Button *pEarthButton;
+    Button *pMoonButton;
+    Button *pMarsButton;
+
     // Compare
     bool isCompare;
     M cmpPointX;
@@ -484,6 +496,17 @@ class AddBodyDialog {
         this->locationString = "X: 0 Y: 0";
 
         this->isCompare = false;
+
+        // Presets
+        pSun = false;
+        pEarth = false;
+        pMoon = false;
+
+        // Presets Buttons
+        pSunButton   = new Button("Sun"  , pSun  , diagX + width - 120, diagY + 70 , 100, 30, WHITE, 16.0f); // 5px spacing
+        pEarthButton = new Button("Earth", pEarth, diagX + width - 120, diagY + 105, 100, 30, WHITE, 16.0f);
+        pMoonButton  = new Button("Moon" , pMoon , diagX + width - 120, diagY + 140, 100, 30, WHITE, 16.0f);
+        pMarsButton  = new Button("Mars" , pMars , diagX + width - 120, diagY + 175, 100, 30, WHITE, 16.0f);
     }
 
     void draw() {
@@ -494,6 +517,29 @@ class AddBodyDialog {
         // Button checking
         if(chooseLocationFlag) {
             state = DialogState::ChooseLocation;
+        }
+
+        // Preset buttons
+        if(pSun) {
+            bodyname = "Sun";
+            massString = "1.989e30";
+            bodyColour = {235, 216, 52, 255};
+
+        }
+        else if(pEarth) {
+            bodyname = "Earth";
+            massString = "5.972e24";
+            bodyColour = {52, 128, 235, 255};
+        }
+        else if(pMoon) {
+            bodyname = "Moon";
+            massString = "7.34767309e22";
+            bodyColour = {150, 150, 150, 255};
+        }
+        else if(pMars) {
+            bodyname = "Mars";
+            massString = "6.39e23";
+            bodyColour = {235, 168, 87, 255};
         }
 
         // Add body button
@@ -588,6 +634,14 @@ class AddBodyDialog {
 
                 // Add Body Button
                 addBodyButton->draw(mousepos);
+
+                // Preset buttons
+                DrawText("Presets", diagX + width - 120, diagY + 50, 16.0f, WHITE);
+                pSunButton  ->draw(mousepos);
+                pEarthButton->draw(mousepos);
+                pMoonButton ->draw(mousepos);
+                pMarsButton ->draw(mousepos);
+
             break;
 
             case ChooseLocation:
