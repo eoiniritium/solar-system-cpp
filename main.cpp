@@ -18,6 +18,7 @@ bool isPaused = true;
 bool reset = false;
 bool addBody = false;
 bool removeBodies = false;
+bool showBodyManager = false;
 
 int main() {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -50,6 +51,8 @@ int main() {
 
     Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
+    Button showBodyManagerDialogButton("Manage Bodies", showBodyManager, ScreenWidth - 450, ScreenHeight - 100, 150, 40, WHITE, 16.0f);
+    BodyManagerDialog bodyManager(bodies, showBodyManager, ScreenWidth, ScreenHeight, WHITE);
 
     while(!WindowShouldClose()) {
         // Misc
@@ -67,6 +70,7 @@ int main() {
             isPaused = true;
         }
 
+        // Physics
         if(!isPaused) {
             secondsElapsed += dT;
 
@@ -104,6 +108,7 @@ int main() {
             }
         }
 
+        // Drawing
         BeginDrawing();
             ClearBackground(BLACK);
 
@@ -129,10 +134,6 @@ int main() {
 
             removeAllBodies.draw(MP);
 
-            if (!addBody) {
-                addBodyButton.draw(MP);
-            }
-
             // Diagnostic information
             if(diagnostics) {
                 std::string frameText = "Frame #: " + std::to_string((int)++framecount);
@@ -146,9 +147,17 @@ int main() {
                 DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
             }
 
-            
             if (addBody) {
-                newBodyDialog.draw();
+                if(newBodyDialog.draw()) {
+                    bodyManager.updateButtons();
+                }
+            }
+            else if(showBodyManager) {
+                bodyManager.draw();
+            }
+            else {
+                addBodyButton.draw(MP);
+                showBodyManagerDialogButton.draw(MP);
             }
 
             if(removeBodies) {

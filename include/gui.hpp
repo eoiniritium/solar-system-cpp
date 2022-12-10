@@ -260,6 +260,11 @@ class Button {
             *value = false;
         }
     }
+
+    void setXY(int x, int y) {
+        this->x = x;
+        this->y = y;
+    }
 };
 
 class ColourPicker {
@@ -506,6 +511,8 @@ class AddBodyDialog {
     int mpx;
     int mpy;
 
+    bool bodyAdded;
+
     public:
     AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &dialogFlag, int screenWidth, int screenHeight) {
         this->screenWidth = screenWidth;
@@ -543,6 +550,8 @@ class AddBodyDialog {
 
         this->isCompare = false;
 
+        this->bodyAdded = false;
+
         // Presets
         pSun = false;
         pEarth = false;
@@ -555,7 +564,9 @@ class AddBodyDialog {
         pMarsButton  = new Button("Mars" , pMars , diagX + width - 120, diagY + 175, 100, 30, WHITE, 16.0f);
     }
 
-    void draw() {
+    // Return true if body just added
+    bool draw() {
+        bodyAdded = false;
         Vector2 mousepos = GetMousePosition();
         double mx = mousepos.x;
         double my = mousepos.y;
@@ -617,10 +628,12 @@ class AddBodyDialog {
             if(failText == "") {
                 *dialogFlag = false;
                 bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale, screenWidth, screenHeight));
-
+                resetAllVariables();
+                bodyAdded = true;
             } else {
-                // Error handling
+                // Not all fields are full
             }
+
         }
 
         switch(state) {
@@ -639,17 +652,18 @@ class AddBodyDialog {
                     if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
                         resetAllVariables();
                         *dialogFlag = false; // Exits dialog
+                        bodyAdded = false;
                     }
                 }
                 else {
                     DrawRectangle(diagX + width - 48, diagY + 12, 26, 26, BLACK);
                 }
                 DrawText("X", diagX + width - 45, diagY + 13, 18.0f, WHITE);
-                
+
                 // Body name
                 DrawText("Body Name", diagX + 5, diagY + 50, 16.0f, WHITE);
                 nameEntry->draw();
-                
+
                 // Body location
                 chooseLocationButton->draw(mousepos);
                 DrawText(locationString.c_str(), diagX + 220, diagY + 117, 16.0f, WHITE);
@@ -725,6 +739,8 @@ class AddBodyDialog {
                 DrawText("Click to select location", mx + 10, my - 26, 16.0f, WHITE);
             break;
         }
+
+        return bodyAdded;
     }
 
     void resetAllVariables() {
@@ -738,5 +754,78 @@ class AddBodyDialog {
         xVelocityString = "";
         yVelocityString = "";
         locationString = "X: 0m\nY: 0m";
+    }
+};
+
+// Display a list of all bodies with ability to remove bodies
+class BodyManagerDialog {
+    private:
+    struct ButtonBoolPair
+    {
+        Button *button;
+        bool flag;
+    };
+
+    std::vector<Body> *bodies;
+    std::vector<ButtonBoolPair> buttons;
+    int x, y, w, h;
+    int endX, endY;
+    Color colour;
+
+    bool *flag;
+
+    // UI Buttons
+    Button *closeButton;
+
+    // Booleans
+    bool close;
+
+    public:
+    BodyManagerDialog(std::vector<Body> &bodiesVector, bool &flag, int screenWidth, int ScreenHeight, Color colour) {
+        this->bodies = &bodiesVector;
+
+        this->w = 550;
+        this->h = 600;
+        this->x = (screenWidth - w)/2;
+        this->y = (ScreenHeight - h)/2;
+
+        this->endX = x + w;
+        this->endY = y + h;
+
+        this->colour = colour;
+
+        this->flag = &flag;
+
+        this->close = false;
+        this->closeButton = new Button("x", close, endX - 50, y + 10, 30, 30, WHITE, 16.0f);
+    }
+
+    void updateButtons() {
+        buttons.clear();
+
+        // Instantiate new Buttons
+        for(size_t i = 0; i < bodies->size(); ++i) {
+            ButtonBoolPair pair;
+            pair.flag = false;
+            pair.button = new Button("x", pair.flag, 0, 0, 20, 20, RED, 16.0f);
+
+            buttons.push_back(pair);
+        }
+    }
+
+    void draw() {
+        Vector2 mousepos = GetMousePosition();
+        double mx = mousepos.x;
+        double my = mousepos.y;
+
+        DrawRectangle(x, y, w, h, colour);
+        DrawRectangle(x+2, y+2, w-4, h-4, BLACK);
+        closeButton->draw(mousepos);
+    }
+
+    private:
+    void closeDialog() {
+        *flag = false;
+        close = false;
     }
 };

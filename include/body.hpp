@@ -32,7 +32,6 @@ M GetDistance(M x1, M y1, M x2, M y2) { // Confirmed
 }
 
 N GetGravitationalForce(M r, KG m1, KG m2) { // Confirmed?
-    
     N force = (G * m1 * m2)/(r*r); // Gravitation Equation
     return force;
 }
