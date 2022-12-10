@@ -503,10 +503,15 @@ class AddBodyDialog {
     // For this only
     std::string locationString;
 
+    int mpx;
+    int mpy;
+
     public:
     AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &dialogFlag, int screenWidth, int screenHeight) {
         this->screenWidth = screenWidth;
         this->screenHeight = screenHeight;
+        mpx = screenWidth/2;
+        mpy = screenHeight/2;
         this->width = 550;
         this->height = 600;
         this->borderThickness = 2;
@@ -611,7 +616,7 @@ class AddBodyDialog {
 
             if(failText == "") {
                 *dialogFlag = false;
-                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale));
+                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale, screenWidth, screenHeight));
 
             } else {
                 // Error handling
@@ -687,8 +692,8 @@ class AddBodyDialog {
 
             case ChooseLocation:
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    bodyVirtualX = mx * scale;
-                    bodyVirtualY = my * scale;
+                    bodyVirtualX = (mx - mpx) * scale;
+                    bodyVirtualY = (my - mpy) * scale;
                     locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
                     state = AddBody;
                     isCompare = false;
@@ -696,8 +701,8 @@ class AddBodyDialog {
                 }
                 else if(IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
                     if(!isCompare) {
-                        cmpPointX = mx;
-                        cmpPointY = my;
+                        cmpPointX = (mx - mpx) * scale;
+                        cmpPointY = (my - mpy) * scale;
                     }
                     isCompare = !isCompare;
                 }
@@ -705,7 +710,7 @@ class AddBodyDialog {
                 if(isCompare) {
                     DrawLine(cmpPointX, cmpPointY, mx, my, RED);
                     DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
-                    compareString = "Distance: " + addCommas(roundDecimalPlaces(GetDistance(cmpPointX * scale, cmpPointY * scale, mx * scale, my * scale)/1000, 1)) + "KM";
+                    compareString = "Distance: " + addCommas(roundDecimalPlaces(GetDistance(cmpPointX, cmpPointY, (mx - mpx) * scale, (my - mpy) * scale)/1000, 1)) + "KM";
 
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
                     DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);

@@ -5,7 +5,6 @@
 #include <cmath>
 #include <limits>
 
-
 #include <iostream>
 
 
@@ -155,9 +154,12 @@ class Body {
     float radius;
     std::string label;
 
+    //  FROM 0, 0 center of screen
+    int mpx;
+    int mpy;
 
     public:
-    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale) {
+    Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale, int screenWidth, int screenHeight) {
         this->virtualX = xLocation;
         this->x = xLocation / scale;
         this->virtualY = yLocation;
@@ -172,6 +174,9 @@ class Body {
 
         this->ax = 0;
         this->ay = 0;
+
+        mpx = screenWidth / 2;
+        mpy = screenHeight / 2;
 
         original.virtualX = virtualX;
         original.virtualY = virtualY;
@@ -202,12 +207,14 @@ class Body {
 
         virtualX += vx * t;
         virtualY += vy * t;
-        x = virtualX / scale;
-        y = virtualY / scale;
+        x = (virtualX / scale) + mpx;
+        y = (virtualY / scale) + mpy;
     }
 
     void draw(bool drawLabel, bool drawDiagnostic) {
         DrawCircle(x, y, radius, col);
+
+        std::cout << x << " " << y << std::endl;
 
         if(drawLabel) this->drawLabel();
         if(drawDiagnostic) {

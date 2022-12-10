@@ -24,7 +24,6 @@ int main() {
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(ScreenWidth, ScreenHeight, "Solar System");
 
-    
     std::vector<Body> bodies;
 
     // UI elements
