@@ -160,10 +160,13 @@ class Body {
 
     public:
     Body(std::string label, M xLocation, M yLocation, MS_1 uvx, MS_1 uvy, KG mass, float radius, Color colour, double scale, int screenWidth, int screenHeight) {
+        mpx = screenWidth / 2;
+        mpy = screenHeight / 2;
+
         this->virtualX = xLocation;
-        this->x = xLocation / scale;
+        this->x = (xLocation / scale) + mpx;
         this->virtualY = yLocation;
-        this->y = yLocation / scale;
+        this->y = (yLocation / scale) + mpy;
         this->vx = uvx;
         this->vy = uvy;
         this->mass = mass;
@@ -174,9 +177,6 @@ class Body {
 
         this->ax = 0;
         this->ay = 0;
-
-        mpx = screenWidth / 2;
-        mpy = screenHeight / 2;
 
         original.virtualX = virtualX;
         original.virtualY = virtualY;
@@ -213,8 +213,6 @@ class Body {
 
     void draw(bool drawLabel, bool drawDiagnostic) {
         DrawCircle(x, y, radius, col);
-
-        std::cout << x << " " << y << std::endl;
 
         if(drawLabel) this->drawLabel();
         if(drawDiagnostic) {

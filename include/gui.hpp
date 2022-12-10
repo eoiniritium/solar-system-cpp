@@ -472,8 +472,8 @@ class AddBodyDialog {
 
     // Compare
     bool isCompare;
-    M cmpPointX;
-    M cmpPointY;
+    M cmpPointX, cmpPointXReal;
+    M cmpPointY, cmpPointYReal;
     std::string compareString;
 
     Entry *nameEntry;
@@ -692,10 +692,10 @@ class AddBodyDialog {
 
             case ChooseLocation:
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    bodyVirtualX = (mx - mpx) * scale;
+                    bodyVirtualX = (mx - mpx) * scale; // Seems Correct
                     bodyVirtualY = (my - mpy) * scale;
                     locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
-                    state = AddBody;
+                    state = DialogState::AddBody;
                     isCompare = false;
                     chooseLocationFlag = false;
                 }
@@ -708,8 +708,10 @@ class AddBodyDialog {
                 }
 
                 if(isCompare) {
-                    DrawLine(cmpPointX, cmpPointY, mx, my, RED);
-                    DrawCircle(cmpPointX, cmpPointY, 3.0f, GREEN);
+                    cmpPointXReal = (cmpPointX / scale) + mpx;
+                    cmpPointYReal = (cmpPointY / scale) + mpy;
+                    DrawLine(cmpPointXReal, cmpPointYReal, mx, my, RED);
+                    DrawCircle(cmpPointXReal, cmpPointYReal, 3.0f, GREEN);
                     compareString = "Distance: " + addCommas(roundDecimalPlaces(GetDistance(cmpPointX, cmpPointY, (mx - mpx) * scale, (my - mpy) * scale)/1000, 1)) + "KM";
 
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
