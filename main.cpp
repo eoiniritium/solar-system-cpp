@@ -162,6 +162,7 @@ int main() {
 
             if(removeBodies) {
                 bodies.clear();
+                bodyManager.updateButtons();
             }
 
         EndDrawing();

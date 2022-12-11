@@ -216,6 +216,18 @@ class Button {
     bool *value;
 
     public:
+    Button(std::string text, int x, int y, int width, int height, Color colour, float fontsize) {
+        value = nullptr;
+
+        this->text = text;
+        this->x = x;
+        this->y = y;
+        this->width = width;
+        this->height = height;
+        this->fontsize = fontsize;
+        this->colour = colour;
+    }
+
     Button(std::string text, bool &flagVar, int x, int y, int width, int height, Color colour, float fontsize) {
         this->text = text;
         this->x = x;
@@ -264,6 +276,10 @@ class Button {
     void setXY(int x, int y) {
         this->x = x;
         this->y = y;
+    }
+
+    void setFlagVar(bool &flagVar) {
+        value = &flagVar;
     }
 };
 
@@ -760,14 +776,15 @@ class AddBodyDialog {
 // Display a list of all bodies with ability to remove bodies
 class BodyManagerDialog {
     private:
-    struct ButtonBoolPair
+    struct ButtonBoolName
     {
         Button *button;
         bool flag;
+        std::string name;
     };
 
     std::vector<Body> *bodies;
-    std::vector<ButtonBoolPair> buttons;
+    std::vector<ButtonBoolName> buttons;
     int x, y, w, h;
     int endX, endY;
     Color colour;
@@ -777,8 +794,13 @@ class BodyManagerDialog {
     // UI Buttons
     Button *closeButton;
 
+    Button *upButton, *downButton;
+
     // Booleans
     bool close;
+    bool up;
+    bool down;
+    size_t iter;
 
     public:
     BodyManagerDialog(std::vector<Body> &bodiesVector, bool &flag, int screenWidth, int ScreenHeight, Color colour) {
@@ -797,7 +819,11 @@ class BodyManagerDialog {
         this->flag = &flag;
 
         this->close = false;
-        this->closeButton = new Button("x", close, endX - 50, y + 10, 30, 30, WHITE, 16.0f);
+        this->closeButton = new Button("X", close, endX - 50, y + 10, 30, 30, WHITE, 16.0f);
+        this->upButton   = new Button("Up"  , up  , x+20, endY-40, (w/2)-25, 30, WHITE, 16.0f);
+        this->downButton = new Button("Down", down, x+20+(w/2)-15, endY-40, (w/2)-25, 30, WHITE, 16.0f);
+
+        this->iter = 0;
     }
 
     void updateButtons() {
@@ -805,27 +831,85 @@ class BodyManagerDialog {
 
         // Instantiate new Buttons
         for(size_t i = 0; i < bodies->size(); ++i) {
-            ButtonBoolPair pair;
-            pair.flag = false;
-            pair.button = new Button("x", pair.flag, 0, 0, 20, 20, RED, 16.0f);
+            ButtonBoolName body;
+            body.flag = false;
+            body.button = new Button("X", 0, 0, 30, 30, RED, 16.0f);
+            body.name = bodies->at(i).getLabel();
 
-            buttons.push_back(pair);
+
+            buttons.push_back(body);
         }
     }
 
     void draw() {
         Vector2 mousepos = GetMousePosition();
-        double mx = mousepos.x;
-        double my = mousepos.y;
+        //double mx = mousepos.x;
+        //double my = mousepos.y;
 
         DrawRectangle(x, y, w, h, colour);
         DrawRectangle(x+2, y+2, w-4, h-4, BLACK);
         closeButton->draw(mousepos);
+
+        DrawText("Manage Bodies", x+5, y+5, 30.0f, WHITE);
+
+        DrawRectangle(x+20, y+45, w - 40, h-90, WHITE);
+        DrawRectangle(x+22, y+47, w - 44, h-94, BLACK);
+
+        upButton  ->draw(mousepos);
+        downButton->draw(mousepos);
+
+        size_t maxItems = 7;
+        size_t upperBound = buttons.size();
+        if(upperBound > (iter + maxItems)) {
+            upperBound = iter + maxItems;
+        }
+        size_t c = 0;
+        for(size_t i = iter; i < upperBound; ++i) { 
+            bool thisFlag = 0;
+            buttons[i].button->setFlagVar(thisFlag);
+            ButtonBoolName thisBody = buttons[i];
+
+            double yLocation = y+50 + ((c++) * 60);
+            DrawRectangle(x+25, yLocation, w-50, 50, WHITE);
+            DrawRectangle(x+27, yLocation+2, w-54, 46, BLACK);
+
+            DrawText(thisBody.name.c_str(), x+40, yLocation+14, 20.0f, WHITE);
+
+            thisBody.button->setXY(endX-60, yLocation + 10);
+            thisBody.button->draw(mousepos);
+
+            if(thisFlag) {
+                bodies->erase(bodies->begin() + i);
+                updateButtons();
+            }
+        }
+
+        if(buttons.size() == 0) {
+            char text[] = "No Bodies";
+            int fontSize = 32.0f;
+            DrawText("No Bodies", x + (w - MeasureText(text, fontSize))/2, (y+h)/2, fontSize, GRAY);
+        }
+
+        if(close) {
+            closeDialog();
+        }
+
+        if(down) {
+            if(iter < bodies->size()) {
+                iter++;
+            }
+        }
+        else if(up) {
+            if(iter > 0) {
+                iter--;
+            }
+        }
     }
 
     private:
     void closeDialog() {
         *flag = false;
         close = false;
+        iter  = 0;
     }
 };
