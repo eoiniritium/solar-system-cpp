@@ -472,7 +472,7 @@ class AddBodyDialog {
     int borderThickness;
     int diagX;
     int diagY;
-    double scale;
+    double *scale;
     DialogState state;
     std::vector<Body> *bodies; // Pointer to body vector
     bool *dialogFlag;
@@ -524,21 +524,21 @@ class AddBodyDialog {
     // For this only
     std::string locationString;
 
-    int mpx;
-    int mpy;
+    double *mpx;
+    double *mpy;
 
     bool bodyAdded;
 
     public:
-    AddBodyDialog(std::vector<Body> &bodiesVector, double scale, bool &dialogFlag, int screenWidth, int screenHeight) {
+    AddBodyDialog(std::vector<Body> &bodiesVector, double &scale, bool &dialogFlag, int screenWidth, int screenHeight, double &cameraX, double &cameraY) {
         this->screenWidth = screenWidth;
         this->screenHeight = screenHeight;
-        mpx = screenWidth/2;
-        mpy = screenHeight/2;
+        mpx = &cameraX;
+        mpy = &cameraY;
         this->width = 550;
         this->height = 600;
         this->borderThickness = 2;
-        this->scale = scale;
+        this->scale = &scale;
 
         this->bodies = &bodiesVector; // Passed by referance
         this->dialogFlag = &dialogFlag; // Should this be open?
@@ -643,7 +643,8 @@ class AddBodyDialog {
 
             if(failText == "") {
                 *dialogFlag = false;
-                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale, screenWidth, screenHeight));
+                
+                bodies->push_back(Body(bodyname, bodyVirtualX, bodyVirtualY, bodyUVX, bodyUVY, bodyMass, radius, bodyColour, scale, mpx, mpy));
                 resetAllVariables();
                 bodyAdded = true;
             } else {
@@ -722,8 +723,8 @@ class AddBodyDialog {
 
             case ChooseLocation:
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    bodyVirtualX = (mx - mpx) * scale; // Seems Correct
-                    bodyVirtualY = (my - mpy) * scale;
+                    bodyVirtualX = (mx - (*mpx)) * (*scale); // Seems Correct
+                    bodyVirtualY = (my - (*mpy)) * (*scale);
                     locationString = "X: " + removeTrailingCharacters(std::to_string(bodyVirtualX), '0') + "0m\nY: " + removeTrailingCharacters(std::to_string(bodyVirtualY), '0') + "0m";
                     state = DialogState::AddBody;
                     isCompare = false;
@@ -731,18 +732,18 @@ class AddBodyDialog {
                 }
                 else if(IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
                     if(!isCompare) {
-                        cmpPointX = (mx - mpx) * scale;
-                        cmpPointY = (my - mpy) * scale;
+                        cmpPointX = (mx - (*mpx)) * (*scale);
+                        cmpPointY = (my - (*mpy)) * (*scale);
                     }
                     isCompare = !isCompare;
                 }
 
                 if(isCompare) {
-                    cmpPointXReal = (cmpPointX / scale) + mpx;
-                    cmpPointYReal = (cmpPointY / scale) + mpy;
+                    cmpPointXReal = (cmpPointX / (*scale)) + (*mpx);
+                    cmpPointYReal = (cmpPointY / (*scale)) + (*mpy);
                     DrawLine(cmpPointXReal, cmpPointYReal, mx, my, RED);
                     DrawCircle(cmpPointXReal, cmpPointYReal, 3.0f, GREEN);
-                    compareString = "Distance: " + addCommas(roundDecimalPlaces(GetDistance(cmpPointX, cmpPointY, (mx - mpx) * scale, (my - mpy) * scale)/1000, 1)) + "KM";
+                    compareString = "Distance: " + addCommas(roundDecimalPlaces(GetDistance(cmpPointX, cmpPointY, (mx - (*mpx)) * (*scale), (my - (*mpy)) * (*scale))/1000, 1)) + "KM";
 
                     DrawText("Right Click to remove point", mx + 10, my + 10, 16.0f, WHITE);
                     DrawText(compareString.c_str(), mx + 10, my + 26, 16.0f, WHITE);
@@ -865,7 +866,7 @@ class BodyManagerDialog {
         }
         size_t c = 0;
         for(size_t i = iter; i < upperBound; ++i) { 
-            bool thisFlag = 0;
+            bool thisFlag = false;
             buttons[i].button->setFlagVar(thisFlag);
             ButtonBoolName thisBody = buttons[i];
 
@@ -885,9 +886,9 @@ class BodyManagerDialog {
         }
 
         if(buttons.size() == 0) {
-            char text[] = "No Bodies";
+            const char text[] = "No Bodies";
             int fontSize = 32.0f;
-            DrawText("No Bodies", x + (w - MeasureText(text, fontSize))/2, (y+h)/2, fontSize, GRAY);
+            DrawText(text, x + (w - MeasureText(text, fontSize))/2, (y+h)/2, fontSize, GRAY);
         }
 
         if(close) {

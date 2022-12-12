@@ -6,11 +6,18 @@
 
 const int ScreenWidth  = 1280;
 const int ScreenHeight = 720;
-const double scale = 400000000.0f; // 1px = 400,000km = 400,000,000m
+const double oScale = 400000000.0f;
+double scale = oScale; // 1px = 400,000km = 400,000,000m
+double zoomSpeed = 100000000.0f;
 double timeMultiplier = 1;
 
 double framecount = 0; // Double so don'r run into overflow
 double secondsElapsed = 0;
+
+// Camera
+double cameraX     = ScreenWidth/2;
+double cameraY     = ScreenHeight/2;
+double cameraSpeed = 100.0f;
 
 bool labels = true;
 bool diagnostics = true;
@@ -47,7 +54,7 @@ int main() {
     std::string timeElapsedString = "Time elapsed: 0 days";
     Label timeElapsed(timeElapsedString, 10, 10, 16.0f, WHITE);
 
-    AddBodyDialog newBodyDialog(bodies, scale, addBody, ScreenWidth, ScreenHeight);
+    AddBodyDialog newBodyDialog(bodies, scale, addBody, ScreenWidth, ScreenHeight, cameraX, cameraY);
 
     Button removeAllBodies("Remove all", removeBodies, ScreenWidth - 110, ScreenHeight - 50, 100, 40, RED, 16.0f);
 
@@ -60,7 +67,46 @@ int main() {
         timeMultiplier = slider.getValue();
         timeElapsedString = "Time elapsed: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(secondsElapsed / 86400, 3)), '0') + " days"; // divide by 86400 for Seconds -> Days
         timeElapsed.updateText(timeElapsedString);
-        double dT = GetFrameTime() * timeMultiplier;
+        double deltaTime = GetFrameTime();
+        double dT = deltaTime * timeMultiplier;
+
+        // Camera control
+        bool left, right, up, down, zoomIn, zoomOut;
+        left  = IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT );
+        right = IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT);
+        up    = IsKeyDown(KEY_W) || IsKeyDown(KEY_UP   );
+        down  = IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN );
+
+        zoomIn  = IsKeyDown(KEY_X);
+        zoomOut = IsKeyDown(KEY_Z);
+
+        if(up) {
+            cameraY += cameraSpeed * deltaTime;
+        }
+        if(down) {
+            cameraY -= cameraSpeed * deltaTime;
+        }
+        if(right) {
+            cameraX -= cameraSpeed * deltaTime;
+        }
+        if(left) {
+            cameraX += cameraSpeed * deltaTime;
+        }
+
+        if(zoomIn) {
+            scale -= zoomSpeed * deltaTime;
+        }
+        if(zoomOut) {
+            scale += zoomSpeed * deltaTime;
+        }
+
+        printf("scale: %g%%\n", (scale*100)/oScale);
+
+        //DrawLine(cameraX, 0, cameraX, ScreenHeight, BLUE);
+        //DrawLine(0, cameraY, ScreenWidth, cameraY, BLUE);
+
+        //printf("scale: %g\n", scale);
+
 
         if (!IsWindowFocused()) {
             isPaused = true;
