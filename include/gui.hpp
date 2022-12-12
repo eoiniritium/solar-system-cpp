@@ -914,3 +914,48 @@ class BodyManagerDialog {
         iter  = 0;
     }
 };
+
+class ControlBox {
+    private:
+    int x, y, w, h;
+
+    public:
+    ControlBox(int x, int y, int width, int height) {
+        this->x = x;
+        this->y = y;
+        this->w = width;
+        this->h = height;
+    }
+
+    void draw(std::string zoomString) {
+        DrawRectangle(x, y, w, h, WHITE);
+        DrawRectangle(x+2, y+2, w-4, h-4, BLACK);
+        
+        // Draw Wasd
+        DrawRectangle(x+70, y+5, 60, 40, WHITE);
+        DrawRectangle(x+72, y+7, 56, 36, BLACK);
+        DrawText("W/Up", x+86, y+20, 8.0f, WHITE);
+
+        DrawRectangle(x+5, y+50, 60, 40, WHITE);
+        DrawRectangle(x+7, y+52, 56, 36, BLACK);
+        DrawText("A/Left", x+16, y+65, 8.0f, WHITE);
+
+        DrawRectangle(x+70, y+50, 60, 40, WHITE);
+        DrawRectangle(x+72, y+52, 56, 36, BLACK);
+        DrawText("S/Down", x+80, y+65, 8.0f, WHITE);
+
+        DrawRectangle(x+135, y+50, 60, 40, WHITE);
+        DrawRectangle(x+137, y+52, 56, 36, BLACK);
+        DrawText("D/Right", x+145, y+65, 8.0f, WHITE);
+
+        DrawRectangle(x+200, y+5, 70, 40, WHITE);
+        DrawRectangle(x+202, y+7, 66, 36, BLACK);
+        DrawText("Z: zoom out", x+207, y+20, 8.0f, WHITE);
+
+        DrawRectangle(x+200, y+50, 70, 40, WHITE);
+        DrawRectangle(x+202, y+52, 66, 36, BLACK);
+        DrawText("X: zoom in", x+210, y+65, 8.0f, WHITE);
+
+        DrawText(zoomString.c_str(), x+280, y+5, 16.0f, WHITE);
+    }
+};

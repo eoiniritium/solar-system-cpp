@@ -61,14 +61,21 @@ int main() {
     Button showBodyManagerDialogButton("Manage Bodies", showBodyManager, ScreenWidth - 450, ScreenHeight - 100, 150, 40, WHITE, 16.0f);
     BodyManagerDialog bodyManager(bodies, showBodyManager, ScreenWidth, ScreenHeight, WHITE);
 
+    int controlBoxWidth = 380;
+    ControlBox controlbox((ScreenWidth-controlBoxWidth)/2, 5, controlBoxWidth, 100);
+
+    Vector2 MP;
+    double deltaTime, dT;
+    std::string zoomText = "Zoom: 1x";
+
     while(!WindowShouldClose()) {
-        // Misc
-        Vector2 MP = GetMousePosition();
+        // Vars
+        MP = GetMousePosition();
         timeMultiplier = slider.getValue();
         timeElapsedString = "Time elapsed: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(secondsElapsed / 86400, 3)), '0') + " days"; // divide by 86400 for Seconds -> Days
         timeElapsed.updateText(timeElapsedString);
-        double deltaTime = GetFrameTime();
-        double dT = deltaTime * timeMultiplier;
+        deltaTime = GetFrameTime();
+        dT = deltaTime * timeMultiplier;
 
         // Camera control
         bool left, right, up, down, zoomIn, zoomOut;
@@ -95,18 +102,17 @@ int main() {
 
         if(zoomIn) {
             scale -= zoomSpeed * deltaTime;
+            if(scale < 0) {
+                scale = 0;
+            }
         }
+
         if(zoomOut) {
             scale += zoomSpeed * deltaTime;
         }
 
-        printf("scale: %g%%\n", (scale*100)/oScale);
-
-        //DrawLine(cameraX, 0, cameraX, ScreenHeight, BLUE);
-        //DrawLine(0, cameraY, ScreenWidth, cameraY, BLUE);
-
-        //printf("scale: %g\n", scale);
-
+        double zoomValue = oScale/scale;
+        zoomText = "Zoom: " + removeTrailingCharacters(std::to_string(roundDecimalPlaces(zoomValue, 3)), '0') + "x";
 
         if (!IsWindowFocused()) {
             isPaused = true;
@@ -191,6 +197,9 @@ int main() {
                 DrawText("Resultant Force", ScreenWidth - 200, 10, 16, GREEN);
                 DrawText("Resultant Acceleration", ScreenWidth - 200, 30, 16, RED);
                 DrawText("Resultant Velocity", ScreenWidth - 200, 50, 16, BLUE);
+                
+                DrawLine(cameraX, 0, cameraX, ScreenHeight, BLUE);
+                DrawLine(0, cameraY, ScreenWidth, cameraY, BLUE);
             }
 
             if (addBody) {
@@ -210,6 +219,9 @@ int main() {
                 bodies.clear();
                 bodyManager.updateButtons();
             }
+
+            // Controls box
+            controlbox.draw(zoomText);
 
         EndDrawing();
 
