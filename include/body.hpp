@@ -193,12 +193,19 @@ class Body {
         double t = time;
         applyForceSplit(effectiveForceX, effectiveForceY);
 
-        ax = (Fx) / (mass); // MATHS
-        ay = (Fy) / (mass); // MATHS
+        // FT = MV-MU
+
+        // v = (FT/M) + u 
+
+        //ax = (Fx) / (mass); // MATHS
+        //ay = (Fy) / (mass); // MATHS
 
         ////v = u + at
-        vx = vx + (ax * t);
-        vy = vy + (ay * t);
+        //vx = vx + (ax * t);
+        //vy = vy + (ay * t);
+
+        vx += ((Fx * t)/mass);
+        vy += ((Fy * t)/mass); // Should me more accurate!!!!!
     }
 
     void applyTranslations(double time) {
