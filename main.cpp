@@ -118,7 +118,7 @@ int main() {
             isPaused = true;
         }
 
-        if(addBody){
+        if(addBody || showBodyManager){
             isPaused = true;
         }
 
@@ -213,15 +213,13 @@ int main() {
             else {
                 addBodyButton.draw(MP);
                 showBodyManagerDialogButton.draw(MP);
+                controlbox.draw(zoomText);
             }
 
             if(removeBodies) {
                 bodies.clear();
                 bodyManager.updateButtons();
             }
-
-            // Controls box
-            controlbox.draw(zoomText);
 
         EndDrawing();
 
